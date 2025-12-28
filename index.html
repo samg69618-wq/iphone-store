@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Apple Store Lite FINAL 🍎</title>
+<title>Apple Store 🍎</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -20,24 +20,14 @@ header{
   padding:14px 20px;
   display:flex;
   justify-content:space-between;
-  align-items:center;
   border-bottom:1px solid #eee;
   z-index:10;
 }
-header span{
-  cursor:pointer;
-}
-.hero{
-  text-align:center;
-  padding:80px 20px;
-}
-.hero img{
-  width:240px;
-  transition:transform 1s cubic-bezier(.4,0,.2,1);
-}
-.hero.show img{
-  transform:scale(1.05);
-}
+header span{cursor:pointer}
+section{display:none}
+section.active{display:block}
+.hero{text-align:center;padding:80px 20px}
+.hero img{width:260px;transition:.8s}
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
@@ -49,14 +39,10 @@ header span{
   border-radius:28px;
   padding:24px;
   text-align:center;
-  transition:.4s ease;
+  transition:.4s;
 }
-.card:hover{
-  transform:translateY(-6px);
-}
-.card img{
-  width:140px;
-}
+.card:hover{transform:translateY(-6px)}
+.card img{width:140px}
 button{
   margin-top:12px;
   padding:12px 22px;
@@ -65,7 +51,6 @@ button{
   background:#0071e3;
   color:#fff;
   font-size:16px;
-  cursor:pointer;
 }
 .overlay{
   position:fixed;
@@ -82,168 +67,133 @@ button{
   width:90%;
   max-width:420px;
 }
-.fly{
-  position:fixed;
-  width:160px;
-  pointer-events:none;
-  z-index:9999;
-  transition:1s cubic-bezier(.4,0,.2,1);
-}
-.review{
-  text-align:center;
-  padding:40px 20px;
-  color:#555;
-}
 </style>
 </head>
 
 <body>
 
 <header>
-  <b>Apple Store</b>
-  <span id="cartBtn">Корзина (<span id="count">0</span>)</span>
+  <b onclick="show('catalog')">Apple Store</b>
+  <span onclick="openCart()">Корзина (<span id="count">0</span>)</span>
 </header>
 
-<section class="hero" id="hero">
-  <h1>iPhone</h1>
-  <p>Новый уровень. Как всегда.</p>
-  <img id="heroImg"
-    src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
-</section>
-
-<section class="grid">
-  <div class="card">
+<!-- CATALOG -->
+<section id="catalog" class="active">
+  <div class="hero">
+    <h1>iPhone</h1>
+    <p>Новый уровень. Как всегда.</p>
     <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
-    <h3>iPhone 15 Pro</h3>
-    <p>119 990 ₽</p>
-    <button data-id="1">Добавить в корзину</button>
   </div>
 
-  <div class="card">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
-    <h3>iPhone 15</h3>
-    <p>89 990 ₽</p>
-    <button data-id="2">Добавить в корзину</button>
-  </div>
-
-  <div class="card">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
-    <h3>iPhone 14</h3>
-    <p>69 990 ₽</p>
-    <button data-id="3">Добавить в корзину</button>
+  <div class="grid">
+    <div class="card" onclick="openProduct(1)">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
+      <h3>iPhone 15 Pro</h3>
+      <p>119 990 ₽</p>
+    </div>
+    <div class="card" onclick="openProduct(2)">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
+      <h3>iPhone 15</h3>
+      <p>89 990 ₽</p>
+    </div>
+    <div class="card" onclick="openProduct(3)">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
+      <h3>iPhone 14</h3>
+      <p>69 990 ₽</p>
+    </div>
   </div>
 </section>
 
-<section class="review">
-  ⭐⭐⭐⭐⭐<br>
-  1375 положительных отзывов
+<!-- PRODUCT -->
+<section id="product">
+  <div class="hero">
+    <h1 id="pName"></h1>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
+    <p id="pPrice"></p>
+    <button onclick="add()">Добавить в корзину</button>
+    <br><br>
+    <button onclick="show('catalog')">← Назад</button>
+  </div>
 </section>
 
 <!-- CART -->
-<div id="cartOverlay" class="overlay">
+<div id="cart" class="overlay">
   <div class="modal">
     <h2>Корзина</h2>
-    <div id="cartItems"></div>
-    <br>
-    <button id="checkoutBtn">Оформить заказ</button><br><br>
-    <button id="closeBtn">Закрыть</button>
+    <div id="items"></div>
+    <button onclick="checkout()">Оформить заказ</button><br><br>
+    <button onclick="closeCart()">Закрыть</button>
   </div>
 </div>
 
 <script>
-/* ======================
-   SAFE JS (NO CRASH)
-====================== */
-
-const products = {
-  1:{name:'iPhone 15 Pro',price:119990},
-  2:{name:'iPhone 15',price:89990},
-  3:{name:'iPhone 14',price:69990}
+const products={
+  1:{id:1,name:'iPhone 15 Pro',price:119990},
+  2:{id:2,name:'iPhone 15',price:89990},
+  3:{id:3,name:'iPhone 14',price:69990}
 };
 
-let cart = JSON.parse(localStorage.getItem('cart_final') || '[]');
+let current=null;
+let cart=JSON.parse(localStorage.getItem('cart')||'[]');
 
-/* ELEMENTS */
-const cartOverlay = document.getElementById('cartOverlay');
-const cartItems   = document.getElementById('cartItems');
-const countEl     = document.getElementById('count');
-const hero        = document.getElementById('hero');
-const heroImg     = document.getElementById('heroImg');
-
-/* INIT */
-updateCount();
-setTimeout(()=>hero.classList.add('show'),200);
-
-/* EVENTS */
-document.getElementById('cartBtn').onclick = openCart;
-document.getElementById('closeBtn').onclick = closeCart;
-document.getElementById('checkoutBtn').onclick = checkout;
-
-document.querySelectorAll('button[data-id]').forEach(btn=>{
-  btn.onclick = () => addToCart(btn.dataset.id);
-});
-
-/* FUNCTIONS */
-function save(){
-  localStorage.setItem('cart_final', JSON.stringify(cart));
-  updateCount();
+function show(id){
+  document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
 }
 
-function updateCount(){
-  countEl.textContent = cart.length;
+function openProduct(id){
+  current=id;
+  pName.innerText=products[id].name;
+  pPrice.innerText=products[id].price+' ₽';
+  show('product');
 }
 
-function addToCart(id){
-  cart.push(products[id]);
+function add(){
+  cart.push(products[current]);
   save();
-  flyToCart();
+  alert('Добавлено 🍎');
+}
+
+function save(){
+  localStorage.setItem('cart',JSON.stringify(cart));
+  count.innerText=cart.length;
 }
 
 function openCart(){
-  cartItems.innerHTML = '';
-  if(cart.length === 0){
-    cartItems.innerHTML = '<p>Корзина пуста</p>';
-  } else {
-    cart.forEach(p=>{
-      cartItems.innerHTML += `<p>${p.name}<br>${p.price} ₽</p>`;
-    });
-    cartItems.innerHTML += `
-      <hr>
-      <p><b>Итого:</b> ${cart.reduce((s,p)=>s+p.price,0)} ₽</p>
-    `;
+  items.innerHTML='';
+  const map={};
+  cart.forEach(p=>map[p.name]=(map[p.name]||0)+1);
+  for(let k in map){
+    items.innerHTML+=`
+      <p>${k} × ${map[k]}
+      <button onclick="remove('${k}')">✕</button></p>`;
   }
-  cartOverlay.style.display = 'flex';
+  if(cart.length===0) items.innerHTML='<p>Корзина пуста</p>';
+  cartDiv.style.display='flex';
+}
+
+function remove(name){
+  const i=cart.findIndex(p=>p.name===name);
+  if(i>-1) cart.splice(i,1);
+  save();
+  openCart();
 }
 
 function closeCart(){
-  cartOverlay.style.display = 'none';
+  cartDiv.style.display='none';
 }
 
 function checkout(){
-  cartItems.innerHTML = `
+  items.innerHTML=`
     <h3>Спасибо 🍎</h3>
-    <p>Заказ № APL-${Math.floor(Math.random()*900000+100000)}</p>
-    <p>${new Date().toLocaleString()}</p>
-    <hr>
-    <p><b>Сумма:</b> ${cart.reduce((s,p)=>s+p.price,0)} ₽</p>
+    <p>Сумма: ${cart.reduce((s,p)=>s+p.price,0)} ₽</p>
   `;
-  cart = [];
+  cart=[];
   save();
 }
 
-function flyToCart(){
-  const img = heroImg.cloneNode(true);
-  const r = heroImg.getBoundingClientRect();
-  img.className = 'fly';
-  img.style.left = r.left+'px';
-  img.style.top  = r.top+'px';
-  document.body.appendChild(img);
-  setTimeout(()=>{
-    img.style.transform = 'scale(.1) translate(300px,-300px)';
-    img.style.opacity = '0';
-  },10);
-  setTimeout(()=>img.remove(),1000);
-}
+const cartDiv=document.getElementById('cart');
+save();
 </script>
 
 </body>
