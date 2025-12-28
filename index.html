@@ -1,37 +1,37 @@
 <script>
-/* =========================
-   SAFE SELECTOR
-========================= */
-function $(id){ return document.getElementById(id); }
+document.addEventListener('DOMContentLoaded', () => {
 
 /* =========================
-   DATA
+   SAFE HELPERS
+========================= */
+const $ = id => document.getElementById(id);
+
+/* =========================
+   STATE
 ========================= */
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
+/* =========================
+   PRODUCTS
+========================= */
 const products = [
-  {id:1, name:'iPhone 15 Pro', price:119990, img:'iphone.png'},
-  {id:2, name:'iPhone 15', price:89990, img:'iphone.png'},
-  {id:3, name:'iPhone 14', price:74990, img:'iphone.png'}
+  {id:1, name:'iPhone 15 Pro', price:119990},
+  {id:2, name:'iPhone 15', price:89990},
+  {id:3, name:'iPhone 14', price:74990}
 ];
 
 /* =========================
    CART CORE
 ========================= */
-function addToCart(product){
+window.addToCart = function(product){
+  if(!product) return;
+
   let item = cart.find(i => i.id === product.id);
-  if(item){
-    item.qty++;
-  } else {
-    cart.push({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      qty: 1
-    });
-  }
+  if(item) item.qty++;
+  else cart.push({ ...product, qty:1 });
+
   saveCart();
-  flyToCart();
+  fly();
   openCart();
 }
 
@@ -49,7 +49,7 @@ function updateBadge(){
 /* =========================
    CART UI
 ========================= */
-function openCart(){
+window.openCart = function(){
   if(!$('cart') || !$('items')) return;
 
   $('items').innerHTML = '';
@@ -80,11 +80,11 @@ function openCart(){
   $('cart').style.display = 'flex';
 }
 
-function closeCart(){
+window.closeCart = function(){
   if($('cart')) $('cart').style.display = 'none';
 }
 
-function changeQty(i,d){
+window.changeQty = function(i,d){
   if(!cart[i]) return;
   cart[i].qty += d;
   if(cart[i].qty <= 0) cart.splice(i,1);
@@ -92,7 +92,7 @@ function changeQty(i,d){
   openCart();
 }
 
-function removeItem(i){
+window.removeItem = function(i){
   if(!cart[i]) return;
   cart.splice(i,1);
   saveCart();
@@ -106,7 +106,7 @@ function total(){
 /* =========================
    CHECKOUT (APPLE STYLE)
 ========================= */
-function finish(){
+window.finish = function(){
   if(!$('items')) return;
 
   const orderId = 'APL-' + Math.floor(Math.random()*1000000);
@@ -120,8 +120,7 @@ function finish(){
     <p><b>Дата:</b> ${date}</p>
     <hr>
     ${cart.map(i=>`
-      <p>${i.name}<br>
-      ${i.price.toLocaleString()} ₽ × ${i.qty}</p>
+      <p>${i.name}<br>${i.price.toLocaleString()} ₽ × ${i.qty}</p>
     `).join('')}
     <hr>
     <h3>Итого: ${total().toLocaleString()} ₽</h3>
@@ -137,45 +136,49 @@ function finish(){
 }
 
 /* =========================
-   FLY TO CART ANIMATION
+   FLY ANIMATION (SAFE)
 ========================= */
-function flyToCart(){
+function fly(){
   const img = document.querySelector('.hero img');
-  const cartBtn = document.querySelector('#cartBtn');
+  const cartBtn = $('cartBtn');
   if(!img || !cartBtn) return;
 
-  const clone = img.cloneNode(true);
+  const c = img.cloneNode(true);
   const r1 = img.getBoundingClientRect();
   const r2 = cartBtn.getBoundingClientRect();
 
-  clone.style.position = 'fixed';
-  clone.style.left = r1.left + 'px';
-  clone.style.top = r1.top + 'px';
-  clone.style.width = '120px';
-  clone.style.transition = '1s cubic-bezier(.4,0,.2,1)';
-  clone.style.zIndex = 9999;
-
-  document.body.appendChild(clone);
-
-  requestAnimationFrame(()=>{
-    clone.style.left = r2.left + 'px';
-    clone.style.top = r2.top + 'px';
-    clone.style.transform = 'scale(0.1)';
-    clone.style.opacity = '0';
+  Object.assign(c.style,{
+    position:'fixed',
+    left:r1.left+'px',
+    top:r1.top+'px',
+    width:'120px',
+    transition:'1s cubic-bezier(.4,0,.2,1)',
+    zIndex:9999
   });
 
-  setTimeout(()=>clone.remove(),1000);
+  document.body.appendChild(c);
+
+  requestAnimationFrame(()=>{
+    c.style.left = r2.left+'px';
+    c.style.top = r2.top+'px';
+    c.style.transform = 'scale(.1)';
+    c.style.opacity = '0';
+  });
+
+  setTimeout(()=>c.remove(),1000);
 }
 
 /* =========================
-   PWA
+   PWA SAFE
 ========================= */
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js');
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 
 /* =========================
    INIT
 ========================= */
 updateBadge();
+
+});
 </script>
