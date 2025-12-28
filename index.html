@@ -21,19 +21,19 @@ header{
   display:flex;
   justify-content:space-between;
   border-bottom:1px solid #eee;
+  z-index:10;
 }
 header span{cursor:pointer}
 
 section{display:none;animation:fade .4s ease}
 section.active{display:block}
 @keyframes fade{
-  from{opacity:0;transform:translateY(10px)}
+  from{opacity:0;transform:translateY(12px)}
   to{opacity:1;transform:none}
 }
 
-.hero{text-align:center;padding:50px 20px}
+.hero{text-align:center;padding:60px 20px}
 
-/* catalog */
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
@@ -45,23 +45,22 @@ section.active{display:block}
   border-radius:28px;
   padding:24px;
   text-align:center;
+  transition:.4s;
   cursor:pointer;
-  transition:.3s;
 }
 .card:hover{transform:translateY(-6px)}
 .card img{width:140px}
 
-/* product */
-.product-img{
-  width:260px;
-  transition:.4s ease;
+button{
+  margin-top:12px;
+  padding:12px 22px;
+  border-radius:999px;
+  border:none;
+  background:#0071e3;
+  color:#fff;
+  font-size:16px;
+  cursor:pointer;
 }
-.price{
-  font-size:32px;
-  margin:10px 0;
-  transition:.3s;
-}
-.price.anim{transform:scale(1.08);opacity:.6}
 
 .options{
   display:flex;
@@ -81,22 +80,6 @@ section.active{display:block}
   color:#fff;
 }
 
-/* qty */
-.qty{
-  display:flex;
-  justify-content:center;
-  gap:16px;
-  margin:20px 0;
-}
-.qty button{
-  width:36px;height:36px;
-  border-radius:50%;
-  border:none;
-  background:#f5f5f7;
-  font-size:20px;
-}
-
-/* cart */
 .overlay{
   position:fixed;
   inset:0;
@@ -111,16 +94,38 @@ section.active{display:block}
   padding:24px;
   width:90%;
   max-width:420px;
+  animation:fade .3s ease;
 }
-.cart-row{
+
+/* ЧЕК */
+.receipt{
+  background:#f5f5f7;
+  border-radius:24px;
+  padding:20px;
+  margin-top:20px;
+}
+.receipt h3{
+  margin-top:0;
+  text-align:center;
+}
+.receipt-item{
   display:flex;
   justify-content:space-between;
-  margin:10px 0;
+  font-size:14px;
+  margin:8px 0;
 }
-.total{
-  border-top:1px solid #eee;
+.receipt-total{
+  border-top:1px solid #ddd;
+  margin-top:12px;
   padding-top:12px;
+  font-size:18px;
   font-weight:600;
+}
+.paid{
+  text-align:center;
+  color:#1d9f55;
+  font-weight:600;
+  margin-top:12px;
 }
 </style>
 </head>
@@ -132,7 +137,6 @@ section.active{display:block}
   <span onclick="openCart()">Корзина (<span id="count">0</span>)</span>
 </header>
 
-<!-- CATALOG -->
 <section id="catalog" class="active">
   <div class="hero">
     <h1>iPhone</h1>
@@ -141,31 +145,23 @@ section.active{display:block}
 
   <div class="grid">
     <div class="card" onclick="openProduct(1)">
-      <img src="https://dummyimage.com/300x600/000/fff&text=iPhone+15+Pro">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
       <h3>iPhone 15 Pro</h3>
       <p>от 119 990 ₽</p>
     </div>
     <div class="card" onclick="openProduct(2)">
-      <img src="https://dummyimage.com/300x600/555/fff&text=iPhone+15">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
       <h3>iPhone 15</h3>
       <p>от 89 990 ₽</p>
-    </div>
-    <div class="card" onclick="openProduct(3)">
-      <img src="https://dummyimage.com/300x600/777/fff&text=iPhone+14">
-      <h3>iPhone 14</h3>
-      <p>от 69 990 ₽</p>
     </div>
   </div>
 </section>
 
-<!-- PRODUCT -->
 <section id="product">
   <div class="hero">
     <h1 id="pName"></h1>
-
-    <img id="pImg" class="product-img">
-
-    <div id="pPrice" class="price"></div>
+    <img id="pImg" style="width:220px;margin:20px auto;display:block">
+    <h2 id="pPrice"></h2>
 
     <h3>Цвет</h3>
     <div class="options" id="colors"></div>
@@ -173,24 +169,16 @@ section.active{display:block}
     <h3>Память</h3>
     <div class="options" id="memory"></div>
 
-    <div class="qty">
-      <button onclick="qty--,updatePrice()">−</button>
-      <b id="qty">1</b>
-      <button onclick="qty++,updatePrice()">+</button>
-    </div>
-
     <button onclick="add()">Добавить в корзину</button><br><br>
     <button onclick="show('catalog')">← Назад</button>
   </div>
 </section>
 
-<!-- CART -->
 <div id="cart" class="overlay">
   <div class="modal">
-    <h2>Ваш заказ</h2>
+    <h2>Корзина</h2>
     <div id="items"></div>
-    <div id="total" class="total"></div>
-    <button onclick="checkout()">Оформить заказ</button><br><br>
+    <button onclick="checkout()">Оплатить</button><br><br>
     <button onclick="closeCart()">Закрыть</button>
   </div>
 </div>
@@ -200,35 +188,22 @@ const products={
   1:{
     name:'iPhone 15 Pro',
     base:119990,
-    colors:{
-      'Чёрный':'https://dummyimage.com/300x600/000/fff&text=15+Pro+Black',
-      'Титан':'https://dummyimage.com/300x600/aaa/000&text=15+Pro+Titan',
-      'Белый':'https://dummyimage.com/300x600/eee/000&text=15+Pro+White'
-    },
-    memory:{'128 ГБ':0,'256 ГБ':10000,'512 ГБ':30000}
+    colors:['Чёрный','Титан','Белый'],
+    memory:['128 ГБ','256 ГБ','512 ГБ'],
+    memoryPrice:{'128 ГБ':0,'256 ГБ':10000,'512 ГБ':30000},
+    image:'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/iphone-15-pro-black'
   },
   2:{
     name:'iPhone 15',
     base:89990,
-    colors:{
-      'Чёрный':'https://dummyimage.com/300x600/000/fff&text=15+Black',
-      'Синий':'https://dummyimage.com/300x600/1e90ff/fff&text=15+Blue',
-      'Розовый':'https://dummyimage.com/300x600/ff69b4/fff&text=15+Pink'
-    },
-    memory:{'128 ГБ':0,'256 ГБ':10000}
-  },
-  3:{
-    name:'iPhone 14',
-    base:69990,
-    colors:{
-      'Чёрный':'https://dummyimage.com/300x600/000/fff&text=14+Black',
-      'Фиолетовый':'https://dummyimage.com/300x600/7b68ee/fff&text=14+Purple'
-    },
-    memory:{'128 ГБ':0,'256 ГБ':8000}
+    colors:['Чёрный','Синий','Розовый'],
+    memory:['128 ГБ','256 ГБ'],
+    memoryPrice:{'128 ГБ':0,'256 ГБ':10000},
+    image:'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/iphone-15-black'
   }
 };
 
-let current, selectedColor, selectedMemory, qty=1;
+let current=null, selectedColor='', selectedMemory='';
 let cart=JSON.parse(localStorage.getItem('cart')||'[]');
 
 function show(id){
@@ -238,17 +213,13 @@ function show(id){
 
 function openProduct(id){
   current=id;
-  qty=1;
   const p=products[id];
-  selectedColor=Object.keys(p.colors)[0];
-  selectedMemory=Object.keys(p.memory)[0];
+  selectedColor=p.colors[0];
+  selectedMemory=p.memory[0];
   pName.innerText=p.name;
-  pImg.src=p.colors[selectedColor];
-  renderOptions('colors',Object.keys(p.colors),v=>{
-    selectedColor=v;
-    pImg.src=p.colors[v];
-  });
-  renderOptions('memory',Object.keys(p.memory),v=>{
+  pImg.src=p.image;
+  renderOptions('colors',p.colors,v=>selectedColor=v);
+  renderOptions('memory',p.memory,v=>{
     selectedMemory=v;
     updatePrice();
   });
@@ -257,17 +228,13 @@ function openProduct(id){
 }
 
 function updatePrice(){
-  if(qty<1) qty=1;
   const p=products[current];
-  const price=(p.base+p.memory[selectedMemory])*qty;
-  pPrice.classList.add('anim');
-  setTimeout(()=>pPrice.classList.remove('anim'),200);
+  const price=p.base+p.memoryPrice[selectedMemory];
   pPrice.innerText=price.toLocaleString('ru-RU')+' ₽';
-  document.getElementById('qty').innerText=qty;
 }
 
-function renderOptions(id,arr,cb){
-  const box=document.getElementById(id);
+function renderOptions(el,arr,cb){
+  const box=document.getElementById(el);
   box.innerHTML='';
   arr.forEach((v,i)=>{
     const d=document.createElement('div');
@@ -284,29 +251,60 @@ function renderOptions(id,arr,cb){
 
 function add(){
   const p=products[current];
-  const price=(p.base+p.memory[selectedMemory])*qty;
-  cart.push({name:p.name,color:selectedColor,memory:selectedMemory,qty,price});
+  const price=p.base+p.memoryPrice[selectedMemory];
+  cart.push({name:p.name,color:selectedColor,memory:selectedMemory,price});
+  save();
+  alert('Добавлено в корзину 🍎');
+}
+
+function save(){
   localStorage.setItem('cart',JSON.stringify(cart));
   count.innerText=cart.length;
-  alert('Добавлено 🍎');
 }
 
 function openCart(){
-  let sum=0;
-  items.innerHTML=cart.map(p=>{
-    sum+=p.price;
-    return `<div class="cart-row"><span>${p.name} × ${p.qty}</span><span>${p.price.toLocaleString('ru-RU')} ₽</span></div>`;
-  }).join('');
-  total.innerText='Итого: '+sum.toLocaleString('ru-RU')+' ₽';
+  if(!cart.length){
+    items.innerHTML='<p>Корзина пуста</p>';
+  }else{
+    items.innerHTML=cart.map(p=>`
+      <div class="receipt-item">
+        <span>${p.name}<br>${p.color}, ${p.memory}</span>
+        <span>${p.price.toLocaleString('ru-RU')} ₽</span>
+      </div>
+    `).join('');
+  }
   cartDiv.style.display='flex';
 }
+
 function closeCart(){cartDiv.style.display='none';}
-function checkout(){localStorage.clear();location.reload();}
+
+function checkout(){
+  const total=cart.reduce((s,p)=>s+p.price,0);
+  items.innerHTML=`
+    <div class="receipt">
+      <h3>Apple Store</h3>
+      ${cart.map(p=>`
+        <div class="receipt-item">
+          <span>${p.name}<br>${p.color}, ${p.memory}</span>
+          <span>${p.price.toLocaleString('ru-RU')} ₽</span>
+        </div>
+      `).join('')}
+      <div class="receipt-total">
+        Итого: ${total.toLocaleString('ru-RU')} ₽
+      </div>
+      <div class="paid">✔ Оплачено</div>
+      <div style="text-align:center;font-size:12px;margin-top:8px">
+        ${new Date().toLocaleString('ru-RU')}
+      </div>
+    </div>
+  `;
+  cart=[];
+  save();
+}
 
 const cartDiv=document.getElementById('cart');
 const items=document.getElementById('items');
-const total=document.getElementById('total');
-count.innerText=cart.length;
+save();
 </script>
 
 </body>
