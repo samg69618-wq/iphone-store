@@ -5,6 +5,8 @@
 <title>Apple Store</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<link rel="manifest" href="manifest.json">
+
 <style>
 body{
   margin:0;
@@ -13,47 +15,49 @@ body{
   color:#000;
 }
 header{
-  position:sticky;
-  top:0;
+  position:sticky;top:0;
   background:#fff;
-  border-bottom:1px solid #eee;
   padding:14px 20px;
   display:flex;
   justify-content:space-between;
+  border-bottom:1px solid #eee;
   z-index:10;
 }
 .hero{
   text-align:center;
-  padding:60px 20px;
+  padding:80px 20px;
 }
 .hero img{
-  width:200px;
-  transition:.6s;
+  width:240px;
+  transition:transform .8s cubic-bezier(.4,0,.2,1);
 }
+.hero.show img{transform:scale(1.05)}
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
   gap:20px;
   padding:20px;
 }
 .card{
-  border-radius:20px;
-  padding:20px;
   background:#f5f5f7;
+  border-radius:24px;
+  padding:24px;
   text-align:center;
+  transition:.6s cubic-bezier(.4,0,.2,1);
 }
-.card img{width:120px}
+.card:hover{transform:translateY(-6px)}
+.card img{width:140px}
 button{
+  margin-top:10px;
+  padding:12px 22px;
+  border-radius:999px;
+  border:none;
   background:#0071e3;
   color:#fff;
-  border:none;
-  border-radius:999px;
-  padding:12px 20px;
   font-size:16px;
 }
 .overlay{
-  position:fixed;
-  inset:0;
+  position:fixed;inset:0;
   background:rgba(0,0,0,.4);
   display:none;
   align-items:center;
@@ -61,14 +65,14 @@ button{
 }
 .modal{
   background:#fff;
-  padding:20px;
-  border-radius:20px;
+  border-radius:28px;
+  padding:24px;
   width:90%;
-  max-width:400px;
+  max-width:420px;
 }
 .fly{
   position:fixed;
-  width:120px;
+  width:140px;
   z-index:9999;
   transition:1s cubic-bezier(.4,0,.2,1);
   pointer-events:none;
@@ -83,9 +87,10 @@ button{
   <span onclick="openCart()">Корзина (<span id="count">0</span>)</span>
 </header>
 
-<section class="hero">
+<section class="hero" id="hero">
   <h1>iPhone</h1>
-  <img id="heroImg" src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
+  <img id="heroImg"
+    src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
 </section>
 
 <section class="grid">
@@ -95,6 +100,7 @@ button{
     <p>119 990 ₽</p>
     <button onclick="add(1)">Добавить в корзину</button>
   </div>
+
   <div class="card">
     <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
     <h3>iPhone 15</h3>
@@ -105,76 +111,89 @@ button{
 
 <div id="cart" class="overlay">
   <div class="modal">
-    <h2>Корзина</h2>
+    <h2>Ваш заказ</h2>
     <div id="items"></div>
-    <br>
     <button onclick="checkout()">Оформить заказ</button><br><br>
     <button onclick="closeCart()">Закрыть</button>
   </div>
 </div>
 
 <script>
-let products={
+/* DATA */
+const products={
   1:{name:'iPhone 15 Pro',price:119990},
   2:{name:'iPhone 15',price:89990}
 };
 let cart=JSON.parse(localStorage.getItem('cart')||'[]');
 
+/* INIT */
+updateCount();
+setTimeout(()=>hero.classList.add('show'),200);
+
+/* CART */
 function save(){
   localStorage.setItem('cart',JSON.stringify(cart));
+  updateCount();
+}
+function updateCount(){
   document.getElementById('count').innerText=cart.length;
 }
-
 function add(id){
   cart.push(products[id]);
   save();
   fly();
 }
-
 function openCart(){
-  let box=document.getElementById('items');
+  const box=document.getElementById('items');
   box.innerHTML='';
   if(cart.length===0){
     box.innerHTML='<p>Корзина пуста</p>';
   }else{
     cart.forEach(i=>{
-      box.innerHTML+=`<p>${i.name} — ${i.price} ₽</p>`;
+      box.innerHTML+=`<p>${i.name}<br>${i.price} ₽</p>`;
     });
+    box.innerHTML+=`
+      <hr>
+      <p><b>Итого:</b> ${cart.reduce((s,i)=>s+i.price,0)} ₽</p>
+    `;
   }
-  document.getElementById('cart').style.display='flex';
+  cartDiv.style.display='flex';
 }
+function closeCart(){cartDiv.style.display='none'}
 
-function closeCart(){
-  document.getElementById('cart').style.display='none';
-}
-
+/* CHECK */
 function checkout(){
-  let sum=cart.reduce((s,i)=>s+i.price,0);
-  document.getElementById('items').innerHTML=
-    `<h3>Спасибо 🍎</h3>
-     <p>Заказ оформлен</p>
-     <p><b>Сумма:</b> ${sum} ₽</p>
-     <p>1375 положительных отзывов</p>`;
+  items.innerHTML=`
+    <h3>Спасибо 🍎</h3>
+    <p>Номер заказа: APL-${Math.floor(Math.random()*999999)}</p>
+    <p>${new Date().toLocaleString()}</p>
+    <hr>
+    <p><b>Сумма:</b> ${cart.reduce((s,i)=>s+i.price,0)} ₽</p>
+    <p style="color:#777">1375 положительных отзывов</p>
+  `;
   cart=[];
   save();
 }
 
+/* FLY */
 function fly(){
-  let img=document.getElementById('heroImg');
-  let c=img.cloneNode(true);
-  let a=img.getBoundingClientRect();
-  c.className='fly';
-  c.style.left=a.left+'px';
-  c.style.top=a.top+'px';
-  document.body.appendChild(c);
+  const img=heroImg.cloneNode(true);
+  const r=heroImg.getBoundingClientRect();
+  img.className='fly';
+  img.style.left=r.left+'px';
+  img.style.top=r.top+'px';
+  document.body.appendChild(img);
   setTimeout(()=>{
-    c.style.transform='scale(.1)';
-    c.style.opacity='0';
+    img.style.transform='scale(.1)';
+    img.style.opacity='0';
   },10);
-  setTimeout(()=>c.remove(),1000);
+  setTimeout(()=>img.remove(),1000);
 }
 
-save();
+/* PWA */
+if('serviceWorker'in navigator){
+  navigator.serviceWorker.register('sw.js');
+}
 </script>
 
 </body>
