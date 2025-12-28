@@ -31,9 +31,7 @@ header{
   width:260px;
   transition:transform 1s cubic-bezier(.4,0,.2,1);
 }
-.hero.show img{
-  transform:scale(1.05);
-}
+.hero.show img{transform:scale(1.05)}
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
@@ -47,12 +45,8 @@ header{
   text-align:center;
   transition:.6s cubic-bezier(.4,0,.2,1);
 }
-.card:hover{
-  transform:translateY(-8px);
-}
-.card img{
-  width:140px;
-}
+.card:hover{transform:translateY(-8px)}
+.card img{width:140px}
 button{
   margin-top:12px;
   padding:12px 22px;
@@ -144,6 +138,10 @@ button{
 </div>
 
 <script>
+/* ===== FIXED VARIABLES ===== */
+const cartDiv = document.getElementById('cart');
+const items = document.getElementById('items');
+
 /* DATA */
 const products={
   1:{name:'iPhone 15 Pro',price:119990},
@@ -170,15 +168,14 @@ function add(id){
   fly();
 }
 function openCart(){
-  const box=document.getElementById('items');
-  box.innerHTML='';
+  items.innerHTML='';
   if(cart.length===0){
-    box.innerHTML='<p>Корзина пуста</p>';
+    items.innerHTML='<p>Корзина пуста</p>';
   }else{
     cart.forEach(p=>{
-      box.innerHTML+=`<p>${p.name}<br>${p.price} ₽</p>`;
+      items.innerHTML+=`<p>${p.name}<br>${p.price} ₽</p>`;
     });
-    box.innerHTML+=`
+    items.innerHTML+=`
       <hr>
       <p><b>Итого:</b> ${cart.reduce((s,p)=>s+p.price,0)} ₽</p>
     `;
@@ -189,7 +186,7 @@ function closeCart(){
   cartDiv.style.display='none';
 }
 
-/* CHECK */
+/* CHECKOUT */
 function checkout(){
   items.innerHTML=`
     <h3>Спасибо за заказ 🍎</h3>
@@ -203,7 +200,7 @@ function checkout(){
   save();
 }
 
-/* FLY */
+/* FLY ANIMATION */
 function fly(){
   const img=heroImg.cloneNode(true);
   const r=heroImg.getBoundingClientRect();
