@@ -25,7 +25,6 @@ header{
 }
 header span{cursor:pointer}
 
-/* sections */
 section{display:none;animation:fade .5s ease}
 section.active{display:block}
 @keyframes fade{
@@ -35,69 +34,26 @@ section.active{display:block}
 
 .hero{text-align:center;padding:60px 20px}
 
-/* ===== GALLERY + 3D ===== */
+/* ===== GALLERY ===== */
 .gallery{
   position:relative;
   width:280px;
   height:280px;
   margin:0 auto 20px;
-  perspective:1000px;
 }
-.gallery-track{
-  display:flex;
-  height:100%;
-  transition:transform .6s cubic-bezier(.4,0,.2,1);
+.gallery img{width:100%}
+
+/* ===== PRICE ANIMATION ===== */
+#pPrice{
+  font-size:32px;
+  transition:.35s ease;
 }
-.gallery img{
-  width:280px;
-  flex-shrink:0;
-  transition:transform .25s ease;
-  transform-style:preserve-3d;
+.price-animate{
+  transform:scale(1.08);
+  opacity:.6;
 }
 
-/* dots */
-.dots{
-  display:flex;
-  justify-content:center;
-  gap:8px;
-}
-.dot{
-  width:8px;
-  height:8px;
-  border-radius:50%;
-  background:#ccc;
-}
-.dot.active{background:#000}
-
-/* catalog */
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:20px;
-  padding:20px;
-}
-.card{
-  background:#f5f5f7;
-  border-radius:28px;
-  padding:24px;
-  text-align:center;
-  transition:.4s;
-}
-.card:hover{transform:translateY(-6px)}
-.card img{width:140px}
-
-button{
-  margin-top:12px;
-  padding:12px 22px;
-  border-radius:999px;
-  border:none;
-  background:#0071e3;
-  color:#fff;
-  font-size:16px;
-  cursor:pointer;
-}
-
-/* options */
+/* ===== OPTIONS ===== */
 .options{
   display:flex;
   justify-content:center;
@@ -116,7 +72,24 @@ button{
   color:#fff;
 }
 
-/* cart */
+/* ===== QTY ===== */
+.qty{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:16px;
+  margin:20px 0;
+}
+.qty button{
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  background:#f5f5f7;
+  color:#000;
+  font-size:20px;
+}
+
+/* ===== CART ===== */
 .overlay{
   position:fixed;
   inset:0;
@@ -132,6 +105,27 @@ button{
   width:90%;
   max-width:420px;
 }
+.cart-row{
+  display:flex;
+  justify-content:space-between;
+  margin:12px 0;
+  font-size:15px;
+}
+.total{
+  border-top:1px solid #eee;
+  padding-top:12px;
+  font-size:18px;
+  font-weight:600;
+}
+
+/* ===== FLY TO CART ===== */
+.fly{
+  position:fixed;
+  width:80px;
+  z-index:999;
+  transition:all .8s cubic-bezier(.4,0,.2,1);
+  pointer-events:none;
+}
 </style>
 </head>
 
@@ -142,43 +136,28 @@ button{
   <span onclick="openCart()">Корзина (<span id="count">0</span>)</span>
 </header>
 
-<!-- CATALOG -->
 <section id="catalog" class="active">
   <div class="hero">
     <h1>iPhone</h1>
     <p>Новый уровень. Как всегда.</p>
   </div>
 
-  <div class="grid">
-    <div class="card" onclick="openProduct(1)">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
-      <h3>iPhone 15 Pro</h3>
-      <p>119 990 ₽</p>
-    </div>
-    <div class="card" onclick="openProduct(2)">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
-      <h3>iPhone 15</h3>
-      <p>89 990 ₽</p>
-    </div>
-    <div class="card" onclick="openProduct(3)">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
-      <h3>iPhone 14</h3>
-      <p>69 990 ₽</p>
-    </div>
+  <div style="display:grid;gap:20px;padding:20px">
+    <div onclick="openProduct(1)">iPhone 15 Pro</div>
+    <div onclick="openProduct(2)">iPhone 15</div>
+    <div onclick="openProduct(3)">iPhone 14</div>
   </div>
 </section>
 
-<!-- PRODUCT -->
 <section id="product">
   <div class="hero">
     <h1 id="pName"></h1>
 
-    <div class="gallery" id="gallery">
-      <div class="gallery-track" id="track"></div>
+    <div class="gallery">
+      <img id="pImg" src="">
     </div>
-    <div class="dots" id="dots"></div>
 
-    <p id="pPrice"></p>
+    <div id="pPrice"></div>
 
     <h3>Цвет</h3>
     <div class="options" id="colors"></div>
@@ -186,16 +165,22 @@ button{
     <h3>Память</h3>
     <div class="options" id="memory"></div>
 
+    <div class="qty">
+      <button onclick="qty--,updatePrice()">−</button>
+      <b id="qty">1</b>
+      <button onclick="qty++,updatePrice()">+</button>
+    </div>
+
     <button onclick="add()">Добавить в корзину</button><br><br>
     <button onclick="show('catalog')">← Назад</button>
   </div>
 </section>
 
-<!-- CART -->
 <div id="cart" class="overlay">
   <div class="modal">
-    <h2>Корзина</h2>
+    <h2>Ваш заказ</h2>
     <div id="items"></div>
+    <div class="total" id="total"></div>
     <button onclick="checkout()">Оформить заказ</button><br><br>
     <button onclick="closeCart()">Закрыть</button>
   </div>
@@ -203,20 +188,12 @@ button{
 
 <script>
 const products={
-  1:{name:'iPhone 15 Pro',price:119990,colors:['Чёрный','Титан','Белый'],memory:['128 ГБ','256 ГБ','512 ГБ'],images:[
-    'https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg',
-    'https://upload.wikimedia.org/wikipedia/commons/a/ab/Apple-logo.png'
-  ]},
-  2:{name:'iPhone 15',price:89990,colors:['Чёрный','Синий','Розовый'],memory:['128 ГБ','256 ГБ'],images:[
-    'https://upload.wikimedia.org/wikipedia/commons/a/ab/Apple-logo.png'
-  ]},
-  3:{name:'iPhone 14',price:69990,colors:['Чёрный','Фиолетовый'],memory:['128 ГБ','256 ГБ'],images:[
-    'https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg'
-  ]}
+  1:{name:'iPhone 15 Pro',base:119990,colors:['Чёрный'],memory:['128 ГБ','256 ГБ'],memoryPrice:{'128 ГБ':0,'256 ГБ':10000},img:'https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg'},
+  2:{name:'iPhone 15',base:89990,colors:['Синий'],memory:['128 ГБ','256 ГБ'],memoryPrice:{'128 ГБ':0,'256 ГБ':10000},img:'https://upload.wikimedia.org/wikipedia/commons/a/ab/Apple-logo.png'},
+  3:{name:'iPhone 14',base:69990,colors:['Фиолетовый'],memory:['128 ГБ','256 ГБ'],memoryPrice:{'128 ГБ':0,'256 ГБ':8000},img:'https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg'}
 };
 
-let current=null, slide=0, startX=0;
-let selectedColor='', selectedMemory='';
+let current, selectedMemory, qty=1;
 let cart=JSON.parse(localStorage.getItem('cart')||'[]');
 
 function show(id){
@@ -224,58 +201,26 @@ function show(id){
   document.getElementById(id).classList.add('active');
 }
 
-/* PRODUCT */
 function openProduct(id){
   current=id;
-  slide=0;
-  selectedColor=products[id].colors[0];
+  qty=1;
   selectedMemory=products[id].memory[0];
   pName.innerText=products[id].name;
-  pPrice.innerText=products[id].price+' ₽';
-  renderOptions('colors',products[id].colors,v=>selectedColor=v);
-  renderOptions('memory',products[id].memory,v=>selectedMemory=v);
-  renderGallery(products[id].images);
+  pImg.src=products[id].img;
+  renderOptions('memory',products[id].memory,v=>{selectedMemory=v;updatePrice()});
+  updatePrice();
   show('product');
 }
 
-/* GALLERY */
-function renderGallery(imgs){
-  track.innerHTML='';
-  dots.innerHTML='';
-  imgs.forEach((src,i)=>{
-    track.innerHTML+=`<img src="${src}">`;
-    dots.innerHTML+=`<div class="dot ${i===0?'active':''}"></div>`;
-  });
-  updateSlide();
-}
-function updateSlide(){
-  track.style.transform=`translateX(-${slide*280}px)`;
-  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===slide));
+function updatePrice(){
+  const p=products[current];
+  const price=(p.base+p.memoryPrice[selectedMemory])*qty;
+  pPrice.classList.add('price-animate');
+  setTimeout(()=>pPrice.classList.remove('price-animate'),200);
+  pPrice.innerText=price.toLocaleString('ru-RU')+' ₽';
+  document.getElementById('qty').innerText=qty;
 }
 
-/* SWIPE */
-gallery.addEventListener('touchstart',e=>startX=e.touches[0].clientX);
-gallery.addEventListener('touchend',e=>{
-  const dx=e.changedTouches[0].clientX-startX;
-  if(dx<-50 && slide<products[current].images.length-1) slide++;
-  if(dx>50 && slide>0) slide--;
-  updateSlide();
-});
-
-/* 3D ROTATION */
-gallery.addEventListener('mousemove',e=>{
-  const img=track.children[slide];
-  const r=gallery.getBoundingClientRect();
-  const x=e.clientX-r.left-r.width/2;
-  const y=e.clientY-r.top-r.height/2;
-  img.style.transform=`rotateY(${x/15}deg) rotateX(${-y/15}deg)`;
-});
-gallery.addEventListener('mouseleave',()=>{
-  const img=track.children[slide];
-  img.style.transform='rotateY(0) rotateX(0)';
-});
-
-/* OPTIONS */
 function renderOptions(el,arr,cb){
   const box=document.getElementById(el);
   box.innerHTML='';
@@ -292,17 +237,45 @@ function renderOptions(el,arr,cb){
   });
 }
 
-/* CART */
-function add(){cart.push({name:products[current].name,price:products[current].price,color:selectedColor,memory:selectedMemory});save();alert('Добавлено 🍎');}
-function save(){localStorage.setItem('cart',JSON.stringify(cart));count.innerText=cart.length;}
-function openCart(){items.innerHTML=cart.length?cart.map((p,i)=>`<p>${p.name}<br>${p.color}, ${p.memory}<br>${p.price} ₽ <button onclick="remove(${i})">✕</button></p>`).join(''):'<p>Корзина пуста</p>';cartDiv.style.display='flex';}
-function remove(i){cart.splice(i,1);save();openCart();}
+function add(){
+  const p=products[current];
+  const price=(p.base+p.memoryPrice[selectedMemory])*qty;
+  cart.push({name:p.name,memory:selectedMemory,qty,price});
+  localStorage.setItem('cart',JSON.stringify(cart));
+  count.innerText=cart.length;
+
+  // FLY
+  const img=pImg.cloneNode();
+  img.className='fly';
+  const r=pImg.getBoundingClientRect();
+  img.style.left=r.left+'px';
+  img.style.top=r.top+'px';
+  document.body.appendChild(img);
+  setTimeout(()=>{
+    img.style.left='90%';
+    img.style.top='10px';
+    img.style.opacity=0;
+  },10);
+  setTimeout(()=>img.remove(),800);
+}
+
+function openCart(){
+  let sum=0;
+  items.innerHTML=cart.map(p=>{
+    sum+=p.price;
+    return `<div class="cart-row"><span>${p.name} × ${p.qty}</span><span>${p.price.toLocaleString('ru-RU')} ₽</span></div>`;
+  }).join('');
+  total.innerText='Итого: '+sum.toLocaleString('ru-RU')+' ₽';
+  cartDiv.style.display='flex';
+}
+
 function closeCart(){cartDiv.style.display='none';}
-function checkout(){items.innerHTML=`<h3>Спасибо 🍎</h3><p>Сумма: ${cart.reduce((s,p)=>s+p.price,0)} ₽</p>`;cart=[];save();}
+function checkout(){cart=[];localStorage.clear();location.reload();}
 
 const cartDiv=document.getElementById('cart');
 const items=document.getElementById('items');
-save();
+const total=document.getElementById('total');
+count.innerText=cart.length;
 </script>
 
 </body>
