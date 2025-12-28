@@ -3,17 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Apple Store — iPhone</title>
+<title>Apple Store</title>
 
 <style>
+:root{
+  --bg:#fff;
+  --text:#1d1d1f;
+  --gray:#86868b;
+  --blue:#0071e3;
+}
 body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Arial;
-  color:#1d1d1f;
+  background:var(--bg);
+  color:var(--text);
 }
 nav{
   position:fixed;top:0;width:100%;
-  background:rgba(255,255,255,.9);
+  background:rgba(255,255,255,.85);
   backdrop-filter:blur(20px);
   border-bottom:1px solid #eee;
   z-index:100;
@@ -21,37 +28,42 @@ nav{
 nav .inner{
   max-width:1200px;margin:auto;
   padding:12px 20px;
-  display:flex;justify-content:space-between;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 nav span{cursor:pointer}
 
-.hero{
-  height:100vh;display:flex;
-  align-items:center;justify-content:center;
-  text-align:center;padding-top:60px;
+/* LAYOUT */
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:120px 20px;
 }
-.hero img{width:420px}
 
-.products{
-  max-width:1200px;margin:auto;
-  padding:100px 20px;
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-  gap:40px;
-}
-.product{text-align:center}
-.product img{height:240px;object-fit:contain}
-
+/* BUTTONS */
 button{
-  background:#0071e3;color:#fff;
-  border:none;border-radius:999px;
-  padding:12px 22px;cursor:pointer;
+  background:var(--blue);
+  color:#fff;
+  border:none;
+  border-radius:999px;
+  padding:12px 22px;
+  cursor:pointer;
 }
-button.secondary{
-  background:#e5e5ea;color:#000;
+button.light{
+  background:#f5f5f7;
+  color:#000;
 }
 
-/* CART */
+/* CARD */
+.card{
+  border:1px solid #eee;
+  border-radius:24px;
+  padding:30px;
+  margin-bottom:30px;
+}
+
+/* OVERLAY */
 .overlay{
   position:fixed;inset:0;
   background:rgba(0,0,0,.4);
@@ -59,29 +71,20 @@ button.secondary{
   display:none;
   align-items:center;
   justify-content:center;
-  z-index:200;
 }
 .modal{
-  background:#fff;border-radius:24px;
-  padding:30px;
-  width:90%;max-width:440px;
-  animation:fadeUp .4s ease;
+  background:#fff;
+  border-radius:30px;
+  padding:40px;
+  width:90%;
+  max-width:420px;
 }
-.cart-item{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin:12px 0;
-}
-.qty button{
-  padding:6px 12px;
-  border-radius:50%;
-}
-.total{margin-top:20px;font-weight:600}
-
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(30px)}
-  to{opacity:1;transform:none}
+input{
+  width:100%;
+  padding:14px;
+  border-radius:14px;
+  border:1px solid #ccc;
+  margin-bottom:14px;
 }
 </style>
 </head>
@@ -91,108 +94,93 @@ button.secondary{
 <nav>
   <div class="inner">
     <span> Apple</span>
-    <span onclick="openCart()">Корзина (<span id="count">0</span>)</span>
+    <div>
+      <span onclick="toggleLang()">🌍</span>
+      &nbsp;&nbsp;
+      <span onclick="openProfile()">👤 <span id="userName">Войти</span></span>
+      &nbsp;&nbsp;
+      <span onclick="openCart()">Корзина</span>
+    </div>
   </div>
 </nav>
 
-<div class="hero">
-  <div>
-    <h1>iPhone 15 Pro</h1>
-    <p>Титан. Камера. Мощь.</p>
-    <img src="https://i.imgur.com/1Q9Z1Zm.png"><br><br>
-    <button onclick="add('iPhone 15 Pro',119990)">Добавить в корзину</button>
+<div class="container">
+
+  <div class="card">
+    <h1 id="title">Добро пожаловать в Apple Store</h1>
+    <p id="subtitle">Персональные рекомендации для вас</p>
   </div>
+
+  <div class="card">
+    <h2>Рекомендуем</h2>
+    <p>iPhone 15 Pro — идеально подходит для вас</p>
+    <button onclick="addOrder()">Добавить в заказы</button>
+  </div>
+
+  <div class="card">
+    <h2>История заказов</h2>
+    <div id="orders">Пока заказов нет</div>
+  </div>
+
 </div>
 
-<div class="products">
-  <div class="product">
-    <img src="https://i.imgur.com/1Q9Z1Zm.png">
-    <h3>iPhone 15 Pro</h3>
-    <p>119 990 ₽</p>
-    <button onclick="add('iPhone 15 Pro',119990)">Добавить</button>
-  </div>
-
-  <div class="product">
-    <img src="https://i.imgur.com/4nQZ6Gq.png">
-    <h3>iPhone 15</h3>
-    <p>89 990 ₽</p>
-    <button onclick="add('iPhone 15',89990)">Добавить</button>
-  </div>
-
-  <div class="product">
-    <img src="https://i.imgur.com/4G7G6yC.png">
-    <h3>iPhone 14</h3>
-    <p>74 990 ₽</p>
-    <button onclick="add('iPhone 14',74990)">Добавить</button>
+<!-- PROFILE -->
+<div class="overlay" id="profile">
+  <div class="modal">
+    <h2>Apple ID</h2>
+    <input id="nameInput" placeholder="Ваше имя">
+    <button onclick="login()">Войти</button>
   </div>
 </div>
 
 <!-- CART -->
 <div class="overlay" id="cart">
   <div class="modal">
-    <h3>Корзина</h3>
-    <div id="items"></div>
-    <div class="total">Итого: <span id="sum">0</span> ₽</div>
-    <button style="width:100%;margin-top:20px" onclick="checkout()">Оформить заказ</button>
-    <button class="secondary" style="width:100%;margin-top:10px" onclick="closeCart()">Закрыть</button>
+    <h2>Корзина</h2>
+    <p>Оплата на следующем этапе 🍎</p>
+    <button onclick="closeAll()">Закрыть</button>
   </div>
 </div>
 
 <script>
-let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-function save(){
-  localStorage.setItem('cart',JSON.stringify(cart));
-  document.getElementById('count').innerText =
-    cart.reduce((s,i)=>s+i.qty,0);
-}
-
-function add(name,price){
-  let i = cart.find(x=>x.name===name);
-  if(i) i.qty++;
-  else cart.push({name,price,qty:1});
-  save();
-}
-
-function openCart(){
-  render();
-  document.getElementById('cart').style.display='flex';
-}
-function closeCart(){
-  document.getElementById('cart').style.display='none';
-}
+let user = localStorage.getItem('user') || '';
+let orders = JSON.parse(localStorage.getItem('orders')) || [];
+let lang = localStorage.getItem('lang') || 'ru';
 
 function render(){
-  let box=document.getElementById('items');
-  let sum=0; box.innerHTML='';
-  cart.forEach((i,idx)=>{
-    sum+=i.price*i.qty;
-    box.innerHTML+=`
-    <div class="cart-item">
-      ${i.name}
-      <div class="qty">
-        <button onclick="dec(${idx})">−</button>
-        ${i.qty}
-        <button onclick="inc(${idx})">+</button>
-      </div>
-    </div>`;
+  document.getElementById('userName').innerText = user || 'Войти';
+  let box=document.getElementById('orders');
+  box.innerHTML='';
+  if(!orders.length) box.innerText='Пока заказов нет';
+  orders.forEach(o=>{
+    box.innerHTML+=`🍎 ${o}<br>`;
   });
-  document.getElementById('sum').innerText=sum.toLocaleString();
+}
+function openProfile(){document.getElementById('profile').style.display='flex'}
+function openCart(){document.getElementById('cart').style.display='flex'}
+function closeAll(){
+  document.querySelectorAll('.overlay').forEach(o=>o.style.display='none');
+}
+function login(){
+  user=document.getElementById('nameInput').value;
+  localStorage.setItem('user',user);
+  closeAll(); render();
+}
+function addOrder(){
+  orders.push('iPhone 15 Pro');
+  localStorage.setItem('orders',JSON.stringify(orders));
+  render();
+}
+function toggleLang(){
+  lang = lang==='ru'?'en':'ru';
+  localStorage.setItem('lang',lang);
+  document.getElementById('title').innerText =
+    lang==='ru'?'Добро пожаловать в Apple Store':'Welcome to Apple Store';
+  document.getElementById('subtitle').innerText =
+    lang==='ru'?'Персональные рекомендации для вас':'Personal recommendations for you';
 }
 
-function inc(i){cart[i].qty++;save();render();}
-function dec(i){
-  cart[i].qty--;
-  if(cart[i].qty<=0) cart.splice(i,1);
-  save();render();
-}
-
-function checkout(){
-  alert('Заказ оформлен (визуально, как демо Apple Store)');
-  cart=[]; save(); closeCart();
-}
-
-save();
+render();
 </script>
 
 </body>
