@@ -1,184 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Apple Store</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #fff;
+      color: #000;
+    }
+    header {
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #eee;
+    }
+    .hero {
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .hero img {
+      width: 200px;
+    }
+    button {
+      padding: 12px 20px;
+      border-radius: 999px;
+      border: none;
+      background: #0071e3;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.4);
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal {
+      background: #fff;
+      padding: 24px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 400px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <b>Apple Store</b>
+  <span id="cartBtn" onclick="openCart()">
+    Корзина (<span id="count">0</span>)
+  </span>
+</header>
+
+<div class="hero">
+  <h1>iPhone 15 Pro</h1>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
+  <br><br>
+  <button onclick="addToCart()">Добавить в корзину</button>
+</div>
+
+<div id="cart" class="overlay">
+  <div class="modal">
+    <h2>Корзина</h2>
+    <div id="items"></div>
+    <br>
+    <button onclick="checkout()">Оформить заказ</button>
+    <br><br>
+    <button onclick="closeCart()">Закрыть</button>
+  </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-/* =========================
-   SAFE HELPERS
-========================= */
-const $ = id => document.getElementById(id);
+  let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-/* =========================
-   STATE
-========================= */
-let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-/* =========================
-   PRODUCTS
-========================= */
-const products = [
-  {id:1, name:'iPhone 15 Pro', price:119990},
-  {id:2, name:'iPhone 15', price:89990},
-  {id:3, name:'iPhone 14', price:74990}
-];
-
-/* =========================
-   CART CORE
-========================= */
-window.addToCart = function(product){
-  if(!product) return;
-
-  let item = cart.find(i => i.id === product.id);
-  if(item) item.qty++;
-  else cart.push({ ...product, qty:1 });
-
-  saveCart();
-  fly();
-  openCart();
-}
-
-function saveCart(){
-  localStorage.setItem('cart', JSON.stringify(cart));
-  updateBadge();
-}
-
-function updateBadge(){
-  if($('count')){
-    $('count').innerText = cart.reduce((s,i)=>s+i.qty,0);
+  function save() {
+    localStorage.setItem('cart', JSON.stringify(cart));
+    document.getElementById('count').innerText = cart.length;
   }
-}
 
-/* =========================
-   CART UI
-========================= */
-window.openCart = function(){
-  if(!$('cart') || !$('items')) return;
+  window.addToCart = function () {
+    cart.push({ name: 'iPhone 15 Pro', price: 119990 });
+    save();
+    openCart();
+  }
 
-  $('items').innerHTML = '';
+  window.openCart = function () {
+    const box = document.getElementById('items');
+    box.innerHTML = '';
 
-  if(cart.length === 0){
-    $('items').innerHTML = '<p>Корзина пуста</p>';
-  } else {
-    cart.forEach((i,idx)=>{
-      $('items').innerHTML += `
-        <div style="margin-bottom:16px">
-          <b>${i.name}</b><br>
-          ${i.price.toLocaleString()} ₽ × ${i.qty}
-          <div style="margin-top:8px">
-            <button onclick="changeQty(${idx},1)">+</button>
-            <button onclick="changeQty(${idx},-1)">−</button>
-            <button onclick="removeItem(${idx})">✕</button>
-          </div>
-        </div>
-      `;
-    });
+    if (cart.length === 0) {
+      box.innerHTML = '<p>Корзина пуста</p>';
+    } else {
+      cart.forEach(i => {
+        box.innerHTML += `<p>${i.name} — ${i.price} ₽</p>`;
+      });
+    }
 
-    $('items').innerHTML += `
-      <hr>
-      <b>Итого: ${total().toLocaleString()} ₽</b>
+    document.getElementById('cart').style.display = 'flex';
+  }
+
+  window.closeCart = function () {
+    document.getElementById('cart').style.display = 'none';
+  }
+
+  window.checkout = function () {
+    const box = document.getElementById('items');
+    box.innerHTML = `
+      <h3>Спасибо 🍎</h3>
+      <p>Заказ оформлен (визуально)</p>
+      <p><b>Сумма:</b> ${cart.reduce((s,i)=>s+i.price,0)} ₽</p>
     `;
+    cart = [];
+    save();
   }
 
-  $('cart').style.display = 'flex';
-}
-
-window.closeCart = function(){
-  if($('cart')) $('cart').style.display = 'none';
-}
-
-window.changeQty = function(i,d){
-  if(!cart[i]) return;
-  cart[i].qty += d;
-  if(cart[i].qty <= 0) cart.splice(i,1);
-  saveCart();
-  openCart();
-}
-
-window.removeItem = function(i){
-  if(!cart[i]) return;
-  cart.splice(i,1);
-  saveCart();
-  openCart();
-}
-
-function total(){
-  return cart.reduce((s,i)=>s+i.price*i.qty,0);
-}
-
-/* =========================
-   CHECKOUT (APPLE STYLE)
-========================= */
-window.finish = function(){
-  if(!$('items')) return;
-
-  const orderId = 'APL-' + Math.floor(Math.random()*1000000);
-  const date = new Date().toLocaleString();
-
-  $('items').innerHTML = `
-    <h2 style="text-align:center">Спасибо 🍎</h2>
-    <p style="text-align:center;color:#888">Заказ оформлен</p>
-    <hr>
-    <p><b>Номер заказа:</b> ${orderId}</p>
-    <p><b>Дата:</b> ${date}</p>
-    <hr>
-    ${cart.map(i=>`
-      <p>${i.name}<br>${i.price.toLocaleString()} ₽ × ${i.qty}</p>
-    `).join('')}
-    <hr>
-    <h3>Итого: ${total().toLocaleString()} ₽</h3>
-    <p style="color:#888">Оплата будет доступна позже</p>
-    <button onclick="location.reload()" style="width:100%">
-      Вернуться в магазин
-    </button>
-  `;
-
-  cart = [];
-  localStorage.removeItem('cart');
-  updateBadge();
-}
-
-/* =========================
-   FLY ANIMATION (SAFE)
-========================= */
-function fly(){
-  const img = document.querySelector('.hero img');
-  const cartBtn = $('cartBtn');
-  if(!img || !cartBtn) return;
-
-  const c = img.cloneNode(true);
-  const r1 = img.getBoundingClientRect();
-  const r2 = cartBtn.getBoundingClientRect();
-
-  Object.assign(c.style,{
-    position:'fixed',
-    left:r1.left+'px',
-    top:r1.top+'px',
-    width:'120px',
-    transition:'1s cubic-bezier(.4,0,.2,1)',
-    zIndex:9999
-  });
-
-  document.body.appendChild(c);
-
-  requestAnimationFrame(()=>{
-    c.style.left = r2.left+'px';
-    c.style.top = r2.top+'px';
-    c.style.transform = 'scale(.1)';
-    c.style.opacity = '0';
-  });
-
-  setTimeout(()=>c.remove(),1000);
-}
-
-/* =========================
-   PWA SAFE
-========================= */
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
-}
-
-/* =========================
-   INIT
-========================= */
-updateBadge();
-
+  save();
 });
 </script>
+
+</body>
+</html>
