@@ -1,170 +1,181 @@
-<script>
-document.addEventListener('DOMContentLoaded', () => {
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Apple Store</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-/* =========================
-   SAFE HELPERS
-========================= */
-const $ = id => document.getElementById(id);
-
-/* =========================
-   DATA
-========================= */
-const PRODUCTS = {
-  1:{id:1,name:'iPhone 15 Pro',price:119990},
-  2:{id:2,name:'iPhone 15',price:89990},
-  3:{id:3,name:'iPhone 14',price:74990}
-};
-
-let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-/* =========================
-   CART CORE
-========================= */
-window.addToCart = function(product){
-  if(!product) return;
-  let item = cart.find(i=>i.id===product.id);
-  if(item) item.qty++;
-  else cart.push({...product,qty:1});
-  save();
-  fly();
-  openCart();
+<style>
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  background:#fff;
+  color:#000;
 }
+header{
+  position:sticky;
+  top:0;
+  background:#fff;
+  border-bottom:1px solid #eee;
+  padding:14px 20px;
+  display:flex;
+  justify-content:space-between;
+  z-index:10;
+}
+.hero{
+  text-align:center;
+  padding:60px 20px;
+}
+.hero img{
+  width:200px;
+  transition:.6s;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:20px;
+  padding:20px;
+}
+.card{
+  border-radius:20px;
+  padding:20px;
+  background:#f5f5f7;
+  text-align:center;
+}
+.card img{width:120px}
+button{
+  background:#0071e3;
+  color:#fff;
+  border:none;
+  border-radius:999px;
+  padding:12px 20px;
+  font-size:16px;
+}
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.4);
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+.modal{
+  background:#fff;
+  padding:20px;
+  border-radius:20px;
+  width:90%;
+  max-width:400px;
+}
+.fly{
+  position:fixed;
+  width:120px;
+  z-index:9999;
+  transition:1s cubic-bezier(.4,0,.2,1);
+  pointer-events:none;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <b>Apple Store</b>
+  <span onclick="openCart()">Корзина (<span id="count">0</span>)</span>
+</header>
+
+<section class="hero">
+  <h1>iPhone</h1>
+  <img id="heroImg" src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
+</section>
+
+<section class="grid">
+  <div class="card">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
+    <h3>iPhone 15 Pro</h3>
+    <p>119 990 ₽</p>
+    <button onclick="add(1)">Добавить в корзину</button>
+  </div>
+  <div class="card">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
+    <h3>iPhone 15</h3>
+    <p>89 990 ₽</p>
+    <button onclick="add(2)">Добавить в корзину</button>
+  </div>
+</section>
+
+<div id="cart" class="overlay">
+  <div class="modal">
+    <h2>Корзина</h2>
+    <div id="items"></div>
+    <br>
+    <button onclick="checkout()">Оформить заказ</button><br><br>
+    <button onclick="closeCart()">Закрыть</button>
+  </div>
+</div>
+
+<script>
+let products={
+  1:{name:'iPhone 15 Pro',price:119990},
+  2:{name:'iPhone 15',price:89990}
+};
+let cart=JSON.parse(localStorage.getItem('cart')||'[]');
 
 function save(){
   localStorage.setItem('cart',JSON.stringify(cart));
-  if($('count')) $('count').innerText =
-    cart.reduce((s,i)=>s+i.qty,0);
+  document.getElementById('count').innerText=cart.length;
 }
 
-/* =========================
-   CART UI
-========================= */
-window.openCart = function(){
-  if(!$('cart') || !$('items')) return;
-  $('items').innerHTML = '';
+function add(id){
+  cart.push(products[id]);
+  save();
+  fly();
+}
 
+function openCart(){
+  let box=document.getElementById('items');
+  box.innerHTML='';
   if(cart.length===0){
-    $('items').innerHTML='<p>Корзина пуста</p>';
-  } else {
-    cart.forEach((i,idx)=>{
-      $('items').innerHTML+=`
-        <div style="margin-bottom:14px">
-          <b>${i.name}</b><br>
-          ${i.price.toLocaleString()} ₽ × ${i.qty}
-          <div>
-            <button onclick="qty(${idx},1)">+</button>
-            <button onclick="qty(${idx},-1)">−</button>
-          </div>
-        </div>`;
+    box.innerHTML='<p>Корзина пуста</p>';
+  }else{
+    cart.forEach(i=>{
+      box.innerHTML+=`<p>${i.name} — ${i.price} ₽</p>`;
     });
-    $('items').innerHTML+=`
-      <hr><b>Итого: ${total().toLocaleString()} ₽</b>`;
   }
-  $('cart').style.display='flex';
+  document.getElementById('cart').style.display='flex';
 }
 
-window.closeCart = function(){
-  if($('cart')) $('cart').style.display='none';
+function closeCart(){
+  document.getElementById('cart').style.display='none';
 }
 
-window.qty = function(i,d){
-  if(!cart[i]) return;
-  cart[i].qty+=d;
-  if(cart[i].qty<=0) cart.splice(i,1);
-  save(); openCart();
+function checkout(){
+  let sum=cart.reduce((s,i)=>s+i.price,0);
+  document.getElementById('items').innerHTML=
+    `<h3>Спасибо 🍎</h3>
+     <p>Заказ оформлен</p>
+     <p><b>Сумма:</b> ${sum} ₽</p>
+     <p>1375 положительных отзывов</p>`;
+  cart=[];
+  save();
 }
 
-function total(){
-  return cart.reduce((s,i)=>s+i.price*i.qty,0);
-}
-
-/* =========================
-   CHECKOUT (APPLE)
-========================= */
-window.checkout = function(){
-  if(!$('items')) return;
-  const id='APL-'+Math.floor(Math.random()*999999);
-  const date=new Date().toLocaleString();
-
-  $('items').innerHTML=`
-    <h2>Спасибо 🍎</h2>
-    <p style="color:#888">Заказ оформлен</p>
-    <hr>
-    <p><b>Номер:</b> ${id}</p>
-    <p><b>Дата:</b> ${date}</p>
-    <hr>
-    ${cart.map(i=>`
-      <p>${i.name}<br>${i.price.toLocaleString()} ₽ × ${i.qty}</p>
-    `).join('')}
-    <hr>
-    <h3>Итого: ${total().toLocaleString()} ₽</h3>
-    <p style="color:#888">Оплата будет доступна позже</p>
-    <button onclick="location.reload()" style="width:100%">
-      Вернуться в магазин
-    </button>
-  `;
-  cart=[]; save();
-}
-
-/* =========================
-   FLY TO CART
-========================= */
 function fly(){
-  const img=document.querySelector('.hero img, .product img');
-  const cartBtn=$('cartBtn');
-  if(!img||!cartBtn) return;
-
-  const c=img.cloneNode(true);
-  const a=img.getBoundingClientRect();
-  const b=cartBtn.getBoundingClientRect();
-
-  Object.assign(c.style,{
-    position:'fixed',
-    left:a.left+'px',
-    top:a.top+'px',
-    width:'120px',
-    transition:'1s cubic-bezier(.4,0,.2,1)',
-    zIndex:9999
-  });
-
+  let img=document.getElementById('heroImg');
+  let c=img.cloneNode(true);
+  let a=img.getBoundingClientRect();
+  c.className='fly';
+  c.style.left=a.left+'px';
+  c.style.top=a.top+'px';
   document.body.appendChild(c);
-  requestAnimationFrame(()=>{
-    c.style.left=b.left+'px';
-    c.style.top=b.top+'px';
+  setTimeout(()=>{
     c.style.transform='scale(.1)';
     c.style.opacity='0';
-  });
+  },10);
   setTimeout(()=>c.remove(),1000);
 }
 
-/* =========================
-   REVEAL ANIMATIONS
-========================= */
-if('IntersectionObserver'in window){
-  document.querySelectorAll('.reveal').forEach(el=>{
-    new IntersectionObserver(e=>{
-      if(e[0].isIntersecting) el.classList.add('show');
-    },{threshold:.3}).observe(el);
-  });
-}
-
-/* =========================
-   PRODUCT PAGE LOGIC
-========================= */
-const pid=new URLSearchParams(location.search).get('id');
-if(pid && PRODUCTS[pid]){
-  if($('pName')) $('pName').innerText=PRODUCTS[pid].name;
-  if($('pPrice')) $('pPrice').innerText=
-    PRODUCTS[pid].price.toLocaleString()+' ₽';
-  window.addProduct=function(){
-    addToCart(PRODUCTS[pid]);
-  }
-}
-
-/* =========================
-   INIT
-========================= */
 save();
-
-});
 </script>
+
+</body>
+</html>
