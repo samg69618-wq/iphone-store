@@ -5,130 +5,47 @@
 <title>Apple Store 🍎</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<style>
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  background:#fff;
-  color:#000;
-}
-header{
-  position:sticky;
-  top:0;
-  background:#fff;
-  padding:14px 20px;
-  display:flex;
-  justify-content:space-between;
-  border-bottom:1px solid #eee;
-  z-index:10;
-}
-header span{cursor:pointer}
+<!-- PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+<style>
+/* === СТАРОЕ НЕ ТРОГАЛ === */
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}
+header{position:sticky;top:0;background:#fff;padding:14px 20px;display:flex;justify-content:space-between;border-bottom:1px solid #eee;z-index:10}
+header span{cursor:pointer}
 section{display:none;animation:fade .4s ease}
 section.active{display:block}
-@keyframes fade{
-  from{opacity:0;transform:translateY(12px)}
-  to{opacity:1;transform:none}
-}
-
+@keyframes fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 .hero{text-align:center;padding:60px 20px}
-
-.sale{
-  color:#d60000;
-  font-weight:600;
-  font-size:20px;
-  margin-top:10px;
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:20px;
-  padding:20px;
-}
-.card{
-  background:#f5f5f7;
-  border-radius:28px;
-  padding:24px;
-  text-align:center;
-  transition:.4s;
-  cursor:pointer;
-}
+.sale{color:#d60000;font-weight:600;font-size:20px;margin-top:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;padding:20px}
+.card{background:#f5f5f7;border-radius:28px;padding:24px;text-align:center;transition:.4s;cursor:pointer}
 .card:hover{transform:translateY(-6px)}
 .card img{width:140px}
+button{margin-top:12px;padding:12px 22px;border-radius:999px;border:none;background:#0071e3;color:#fff;font-size:16px;cursor:pointer}
+.options{display:flex;justify-content:center;gap:10px;margin:16px 0;flex-wrap:wrap}
+.option{padding:10px 16px;border-radius:999px;border:1px solid #ddd;cursor:pointer}
+.option.active{background:#000;color:#fff}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:20}
+.modal{background:#fff;border-radius:28px;padding:24px;width:90%;max-width:420px;animation:fade .3s ease}
+.receipt{background:#f5f5f7;border-radius:24px;padding:20px;margin-top:20px}
+.receipt-item{display:flex;justify-content:space-between;font-size:14px;margin:8px 0}
+.receipt-total{border-top:1px solid #ddd;margin-top:12px;padding-top:12px;font-size:18px;font-weight:600}
+.paid{text-align:center;color:#1d9f55;font-weight:600;margin-top:12px}
 
-button{
-  margin-top:12px;
-  padding:12px 22px;
-  border-radius:999px;
-  border:none;
-  background:#0071e3;
-  color:#fff;
-  font-size:16px;
-  cursor:pointer;
-}
+/* FACE ID */
+.faceid{width:90px;height:90px;border-radius:20px;border:3px solid #000;margin:0 auto 16px;position:relative}
+.faceid:before,.faceid:after{content:'';position:absolute;border:2px solid #000;border-radius:50%}
+.faceid:before{width:16px;height:16px;top:22px;left:20px}
+.faceid:after{width:16px;height:16px;top:22px;right:20px}
+.scan{position:absolute;left:0;right:0;height:4px;background:#0071e3;animation:scan 1.2s infinite}
+@keyframes scan{from{top:0}to{top:86px}}
 
-.options{
-  display:flex;
-  justify-content:center;
-  gap:10px;
-  margin:16px 0;
-  flex-wrap:wrap;
-}
-.option{
-  padding:10px 16px;
-  border-radius:999px;
-  border:1px solid #ddd;
-  cursor:pointer;
-}
-.option.active{
-  background:#000;
-  color:#fff;
-}
-
-.overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.45);
-  display:none;
-  align-items:center;
-  justify-content:center;
-}
-.modal{
-  background:#fff;
-  border-radius:28px;
-  padding:24px;
-  width:90%;
-  max-width:420px;
-  animation:fade .3s ease;
-}
-
-.receipt{
-  background:#f5f5f7;
-  border-radius:24px;
-  padding:20px;
-  margin-top:20px;
-}
-.receipt-item{
-  display:flex;
-  justify-content:space-between;
-  font-size:14px;
-  margin:8px 0;
-}
-.receipt-total{
-  border-top:1px solid #ddd;
-  margin-top:12px;
-  padding-top:12px;
-  font-size:18px;
-  font-weight:600;
-}
-.paid{
-  text-align:center;
-  color:#1d9f55;
-  font-weight:600;
-  margin-top:12px;
-}
+/* === ДОБАВЛЕНО === */
+.recent{padding:20px}
+.recent h3{text-align:center}
+.recent-item{font-size:14px;margin:6px 0;color:#555}
 </style>
 </head>
 
@@ -144,6 +61,7 @@ button{
     <h1>iPhone</h1>
     <p class="sale">🔥 СКИДКИ 70% НА ВСЕ ТОВАРЫ!</p>
     <p>Новый уровень. Как всегда.</p>
+    <button onclick="clearCart()" style="background:#d60000">Очистить корзину</button>
   </div>
 
   <div class="grid">
@@ -157,6 +75,12 @@ button{
       <h3>iPhone 15</h3>
       <p>от 26 997 ₽</p>
     </div>
+  </div>
+
+  <!-- Недавние покупки -->
+  <div class="recent">
+    <h3>Недавние покупки</h3>
+    <div id="recent"></div>
   </div>
 </section>
 
@@ -181,142 +105,89 @@ button{
   <div class="modal">
     <h2>Корзина</h2>
     <div id="items"></div>
-    <button onclick="checkout()">Оплатить</button><br><br>
+    <button onclick="startFaceID()">Оплатить</button><br><br>
     <button onclick="closeCart()">Закрыть</button>
   </div>
 </div>
 
+<div id="face" class="overlay">
+  <div class="modal" style="text-align:center">
+    <div class="faceid"><div class="scan"></div></div>
+    <p><b>Подтвердите с помощью Face ID</b></p>
+  </div>
+</div>
+
+<audio id="faceSound" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.wav"></audio>
+
 <script>
-const DISCOUNT = 0.3; // 70% скидка
-
+/* === СТАРОЕ === */
+const DISCOUNT=0.3;
 const products={
-  1:{
-    name:'iPhone 15 Pro',
-    base:Math.round(119990 * DISCOUNT),
-    colors:['Чёрный','Титан','Белый'],
-    memory:['128 ГБ','256 ГБ','512 ГБ'],
-    memoryPrice:{
-      '128 ГБ':0,
-      '256 ГБ':Math.round(10000 * DISCOUNT),
-      '512 ГБ':Math.round(30000 * DISCOUNT)
-    },
-    image:'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/iphone-15-pro-black'
-  },
-  2:{
-    name:'iPhone 15',
-    base:Math.round(89990 * DISCOUNT),
-    colors:['Чёрный','Синий','Розовый'],
-    memory:['128 ГБ','256 ГБ'],
-    memoryPrice:{
-      '128 ГБ':0,
-      '256 ГБ':Math.round(10000 * DISCOUNT)
-    },
-    image:'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/iphone-15-black'
-  }
+  1:{name:'iPhone 15 Pro',base:Math.round(119990*DISCOUNT),colors:['Чёрный','Титан','Белый'],memory:['128 ГБ','256 ГБ','512 ГБ'],memoryPrice:{'128 ГБ':0,'256 ГБ':Math.round(10000*DISCOUNT),'512 ГБ':Math.round(30000*DISCOUNT)},image:'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/iphone-15-pro-black'},
+  2:{name:'iPhone 15',base:Math.round(89990*DISCOUNT),colors:['Чёрный','Синий','Розовый'],memory:['128 ГБ','256 ГБ'],memoryPrice:{'128 ГБ':0,'256 ГБ':Math.round(10000*DISCOUNT)},image:'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/iphone-15-black'}
 };
-
-let current=null, selectedColor='', selectedMemory='';
+let current=null,selectedColor='',selectedMemory='';
 let cart=JSON.parse(localStorage.getItem('cart')||'[]');
+let recent=JSON.parse(localStorage.getItem('recent')||'[]');
 
-function show(id){
-  document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+function show(id){document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function openProduct(id){current=id;const p=products[id];selectedColor=p.colors[0];selectedMemory=p.memory[0];pName.innerText=p.name;pImg.src=p.image;renderOptions('colors',p.colors,v=>selectedColor=v);renderOptions('memory',p.memory,v=>{selectedMemory=v;updatePrice()});updatePrice();show('product')}
+function updatePrice(){const p=products[current];const price=p.base+p.memoryPrice[selectedMemory];pPrice.innerText=price.toLocaleString('ru-RU')+' ₽'}
+function renderOptions(el,arr,cb){const box=document.getElementById(el);box.innerHTML='';arr.forEach((v,i)=>{const d=document.createElement('div');d.className='option'+(i===0?' active':'');d.innerText=v;d.onclick=()=>{box.querySelectorAll('.option').forEach(o=>o.classList.remove('active'));d.classList.add('active');cb(v)};box.appendChild(d)})}
+function add(){const p=products[current];const price=p.base+p.memoryPrice[selectedMemory];cart.push({name:p.name,color:selectedColor,memory:selectedMemory,price});save();alert('Добавлено в корзину 🍎')}
+function clearCart(){if(confirm('Очистить корзину?')){cart=[];save()}}
+function save(){localStorage.setItem('cart',JSON.stringify(cart));count.innerText=cart.length}
+function openCart(){items.innerHTML=cart.length?cart.map(p=>`<div class="receipt-item"><span>${p.name}<br>${p.color}, ${p.memory}</span><span>${p.price.toLocaleString('ru-RU')} ₽</span></div>`).join(''):'<p>Корзина пуста</p>';cartDiv.style.display='flex'}
+function closeCart(){cartDiv.style.display='none'}
+
+/* === ДОБАВЛЕНО === */
+function startFaceID(){
+  faceSound.play();
+  face.style.display='flex';
+  setTimeout(()=>{face.style.display='none';checkout()},2000);
 }
-
-function openProduct(id){
-  current=id;
-  const p=products[id];
-  selectedColor=p.colors[0];
-  selectedMemory=p.memory[0];
-  pName.innerText=p.name;
-  pImg.src=p.image;
-  renderOptions('colors',p.colors,v=>selectedColor=v);
-  renderOptions('memory',p.memory,v=>{
-    selectedMemory=v;
-    updatePrice();
-  });
-  updatePrice();
-  show('product');
-}
-
-function updatePrice(){
-  const p=products[current];
-  const price=p.base+p.memoryPrice[selectedMemory];
-  pPrice.innerText=price.toLocaleString('ru-RU')+' ₽';
-}
-
-function renderOptions(el,arr,cb){
-  const box=document.getElementById(el);
-  box.innerHTML='';
-  arr.forEach((v,i)=>{
-    const d=document.createElement('div');
-    d.className='option'+(i===0?' active':'');
-    d.innerText=v;
-    d.onclick=()=>{
-      box.querySelectorAll('.option').forEach(o=>o.classList.remove('active'));
-      d.classList.add('active');
-      cb(v);
-    };
-    box.appendChild(d);
-  });
-}
-
-function add(){
-  const p=products[current];
-  const price=p.base+p.memoryPrice[selectedMemory];
-  cart.push({name:p.name,color:selectedColor,memory:selectedMemory,price});
-  save();
-  alert('Добавлено в корзину 🍎');
-}
-
-function save(){
-  localStorage.setItem('cart',JSON.stringify(cart));
-  count.innerText=cart.length;
-}
-
-function openCart(){
-  if(!cart.length){
-    items.innerHTML='<p>Корзина пуста</p>';
-  }else{
-    items.innerHTML=cart.map(p=>`
-      <div class="receipt-item">
-        <span>${p.name}<br>${p.color}, ${p.memory}</span>
-        <span>${p.price.toLocaleString('ru-RU')} ₽</span>
-      </div>
-    `).join('');
-  }
-  cartDiv.style.display='flex';
-}
-
-function closeCart(){cartDiv.style.display='none';}
 
 function checkout(){
   const total=cart.reduce((s,p)=>s+p.price,0);
+  recent.unshift({date:new Date().toLocaleString('ru-RU'),total});
+  recent=recent.slice(0,5);
+  localStorage.setItem('recent',JSON.stringify(recent));
+
   items.innerHTML=`
-    <div class="receipt">
-      <h3>Apple Store</h3>
-      ${cart.map(p=>`
-        <div class="receipt-item">
-          <span>${p.name}<br>${p.color}, ${p.memory}</span>
-          <span>${p.price.toLocaleString('ru-RU')} ₽</span>
-        </div>
-      `).join('')}
-      <div class="receipt-total">
-        Итого: ${total.toLocaleString('ru-RU')} ₽
-      </div>
-      <div class="paid">✔ Оплачено</div>
-      <div style="text-align:center;font-size:12px;margin-top:8px">
-        ${new Date().toLocaleString('ru-RU')}
-      </div>
-    </div>
-  `;
-  cart=[];
-  save();
+  <div class="receipt" id="receipt">
+    <h3>Apple Store</h3>
+    ${cart.map(p=>`<div class="receipt-item"><span>${p.name}<br>${p.color}, ${p.memory}</span><span>${p.price.toLocaleString('ru-RU')} ₽</span></div>`).join('')}
+    <div class="receipt-total">Итого: ${total.toLocaleString('ru-RU')} ₽</div>
+    <div class="paid">✔ Оплачено</div>
+    <button onclick="downloadPDF(${total})">Скачать чек (PDF)</button>
+  </div>`;
+  cart=[];save();renderRecent();
+}
+
+function downloadPDF(total){
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF();
+  pdf.text('Apple Store',20,20);
+  pdf.text('Оплачено',20,30);
+  pdf.text('Сумма: '+total.toLocaleString('ru-RU')+' ₽',20,40);
+  pdf.text(new Date().toLocaleString('ru-RU'),20,50);
+  pdf.save('apple-receipt.pdf');
+}
+
+function renderRecent(){
+  recentEl.innerHTML=recent.length
+    ? recent.map(r=>`<div class="recent-item">${r.date} — ${r.total.toLocaleString('ru-RU')} ₽</div>`).join('')
+    : '<div class="recent-item">Покупок пока нет</div>';
 }
 
 const cartDiv=document.getElementById('cart');
 const items=document.getElementById('items');
+const recentEl=document.getElementById('recent');
+const face=document.getElementById('face');
+const faceSound=document.getElementById('faceSound');
+
 save();
+renderRecent();
 </script>
 
 </body>
