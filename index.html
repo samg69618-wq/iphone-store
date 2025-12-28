@@ -12,65 +12,115 @@
   --gray:#86868b;
   --blue:#0071e3;
 }
+*{box-sizing:border-box}
 body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Arial;
   background:var(--bg);
   color:var(--text);
+  overflow-x:hidden;
 }
+
+/* NAV */
 nav{
-  position:fixed;top:0;width:100%;
+  position:fixed;
+  top:0;width:100%;
   background:rgba(255,255,255,.85);
   backdrop-filter:blur(20px);
   border-bottom:1px solid #eee;
   z-index:100;
 }
 nav .inner{
-  max-width:1200px;margin:auto;
+  max-width:1200px;
+  margin:auto;
   padding:12px 20px;
   display:flex;
   justify-content:space-between;
-  align-items:center;
 }
 nav span{cursor:pointer}
 
-/* LAYOUT */
-.container{
-  max-width:1200px;
-  margin:auto;
+/* SECTIONS */
+section{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   padding:120px 20px;
 }
+.inner{
+  max-width:1200px;
+  width:100%;
+  text-align:center;
+}
 
-/* BUTTONS */
+/* HERO */
+.hero h1{
+  font-size:72px;
+  margin:0;
+}
+.hero p{
+  font-size:24px;
+  color:var(--gray);
+}
+.hero img{
+  width:420px;
+  margin-top:40px;
+  transition:transform .2s;
+}
+
+/* BUTTON */
 button{
   background:var(--blue);
   color:#fff;
   border:none;
   border-radius:999px;
-  padding:12px 22px;
+  padding:14px 26px;
+  font-size:16px;
   cursor:pointer;
 }
-button.light{
+
+/* GLASS CARD */
+.glass{
+  background:rgba(255,255,255,.6);
+  backdrop-filter:blur(30px);
+  border:1px solid rgba(255,255,255,.4);
+  border-radius:30px;
+  padding:40px;
+  margin:20px auto;
+  max-width:520px;
+}
+
+/* REVEAL */
+.reveal{
+  opacity:0;
+  transform:translateY(40px);
+  transition:1s;
+}
+.reveal.show{
+  opacity:1;
+  transform:none;
+}
+
+/* CONFIG */
+.options button{
+  margin:6px;
   background:#f5f5f7;
   color:#000;
 }
-
-/* CARD */
-.card{
-  border:1px solid #eee;
-  border-radius:24px;
-  padding:30px;
-  margin-bottom:30px;
+.options button.active{
+  outline:2px solid var(--blue);
 }
 
 /* OVERLAY */
 .overlay{
-  position:fixed;inset:0;
-  background:rgba(0,0,0,.4);
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
   backdrop-filter:blur(20px);
   display:none;
   align-items:center;
   justify-content:center;
+  z-index:200;
 }
 .modal{
   background:#fff;
@@ -78,13 +128,7 @@ button.light{
   padding:40px;
   width:90%;
   max-width:420px;
-}
-input{
-  width:100%;
-  padding:14px;
-  border-radius:14px;
-  border:1px solid #ccc;
-  margin-bottom:14px;
+  text-align:center;
 }
 </style>
 </head>
@@ -94,93 +138,124 @@ input{
 <nav>
   <div class="inner">
     <span> Apple</span>
-    <div>
-      <span onclick="toggleLang()">🌍</span>
-      &nbsp;&nbsp;
-      <span onclick="openProfile()">👤 <span id="userName">Войти</span></span>
-      &nbsp;&nbsp;
-      <span onclick="openCart()">Корзина</span>
-    </div>
+    <span onclick="openCart()">Корзина (<span id="count">0</span>)</span>
   </div>
 </nav>
 
-<div class="container">
-
-  <div class="card">
-    <h1 id="title">Добро пожаловать в Apple Store</h1>
-    <p id="subtitle">Персональные рекомендации для вас</p>
+<!-- ONBOARDING -->
+<section class="hero">
+  <div class="inner">
+    <h1 class="reveal">Apple Store</h1>
+    <p class="reveal">Новый способ выбрать iPhone</p>
+    <img id="heroPhone" class="reveal" src="https://i.imgur.com/1Q9Z1Zm.png">
   </div>
+</section>
 
-  <div class="card">
-    <h2>Рекомендуем</h2>
-    <p>iPhone 15 Pro — идеально подходит для вас</p>
-    <button onclick="addOrder()">Добавить в заказы</button>
+<!-- PRODUCT STORY -->
+<section>
+  <div class="inner glass reveal">
+    <h2>iPhone 15 Pro</h2>
+    <p>Титан. Камера. Мощь.</p>
   </div>
+</section>
 
-  <div class="card">
-    <h2>История заказов</h2>
-    <div id="orders">Пока заказов нет</div>
+<!-- CONFIGURATOR -->
+<section>
+  <div class="inner glass reveal">
+    <h2>Соберите свой iPhone</h2>
+
+    <h3>Цвет</h3>
+    <div class="options">
+      <button onclick="setColor(this,'Титановый')">Титановый</button>
+      <button onclick="setColor(this,'Чёрный')">Чёрный</button>
+      <button onclick="setColor(this,'Белый')">Белый</button>
+    </div>
+
+    <h3>Память</h3>
+    <div class="options">
+      <button onclick="setStorage(this,128)">128 ГБ</button>
+      <button onclick="setStorage(this,256)">256 ГБ</button>
+      <button onclick="setStorage(this,512)">512 ГБ</button>
+    </div>
+
+    <h2 id="price">119 990 ₽</h2>
+    <button onclick="addToCart()">Добавить в корзину</button>
   </div>
+</section>
 
-</div>
-
-<!-- PROFILE -->
-<div class="overlay" id="profile">
-  <div class="modal">
-    <h2>Apple ID</h2>
-    <input id="nameInput" placeholder="Ваше имя">
-    <button onclick="login()">Войти</button>
+<!-- CHECKOUT -->
+<section>
+  <div class="inner glass reveal">
+    <h2>Оформление</h2>
+    <p>Оплата будет на следующем этапе 🍎</p>
+    <button onclick="openCart()">Перейти в корзину</button>
   </div>
-</div>
+</section>
 
 <!-- CART -->
 <div class="overlay" id="cart">
   <div class="modal">
     <h2>Корзина</h2>
-    <p>Оплата на следующем этапе 🍎</p>
-    <button onclick="closeAll()">Закрыть</button>
+    <div id="items"></div>
+    <button onclick="finish()">Оформить заказ</button>
   </div>
 </div>
 
 <script>
-let user = localStorage.getItem('user') || '';
-let orders = JSON.parse(localStorage.getItem('orders')) || [];
-let lang = localStorage.getItem('lang') || 'ru';
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
+let color='Титановый';
+let storage=128;
+let base=119990;
 
-function render(){
-  document.getElementById('userName').innerText = user || 'Войти';
-  let box=document.getElementById('orders');
+function updatePrice(){
+  let extra = storage===256?20000:storage===512?40000:0;
+  document.getElementById('price').innerText=(base+extra).toLocaleString()+' ₽';
+}
+
+function setColor(btn,val){
+  color=val;
+  btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function setStorage(btn,val){
+  storage=val;
+  btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  updatePrice();
+}
+
+function addToCart(){
+  cart.push(`iPhone 15 Pro — ${color}, ${storage} ГБ`);
+  localStorage.setItem('cart',JSON.stringify(cart));
+  document.getElementById('count').innerText=cart.length;
+}
+
+function openCart(){
+  let box=document.getElementById('items');
   box.innerHTML='';
-  if(!orders.length) box.innerText='Пока заказов нет';
-  orders.forEach(o=>{
-    box.innerHTML+=`🍎 ${o}<br>`;
-  });
+  cart.forEach(i=>box.innerHTML+=i+'<br>');
+  document.getElementById('cart').style.display='flex';
 }
-function openProfile(){document.getElementById('profile').style.display='flex'}
-function openCart(){document.getElementById('cart').style.display='flex'}
-function closeAll(){
-  document.querySelectorAll('.overlay').forEach(o=>o.style.display='none');
-}
-function login(){
-  user=document.getElementById('nameInput').value;
-  localStorage.setItem('user',user);
-  closeAll(); render();
-}
-function addOrder(){
-  orders.push('iPhone 15 Pro');
-  localStorage.setItem('orders',JSON.stringify(orders));
-  render();
-}
-function toggleLang(){
-  lang = lang==='ru'?'en':'ru';
-  localStorage.setItem('lang',lang);
-  document.getElementById('title').innerText =
-    lang==='ru'?'Добро пожаловать в Apple Store':'Welcome to Apple Store';
-  document.getElementById('subtitle').innerText =
-    lang==='ru'?'Персональные рекомендации для вас':'Personal recommendations for you';
+function finish(){
+  alert('Заказ оформлен 🍎 (визуально)');
+  cart=[];
+  localStorage.clear();
+  location.reload();
 }
 
-render();
+/* REVEAL */
+const obs=new IntersectionObserver(e=>{
+  e.forEach(x=>x.isIntersecting&&x.target.classList.add('show'));
+},{threshold:.3});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+/* PARALLAX */
+window.addEventListener('scroll',()=>{
+  document.getElementById('heroPhone').style.transform=
+    `translateY(${window.scrollY*0.15}px)`;
+});
+
+document.getElementById('count').innerText=cart.length;
 </script>
 
 </body>
