@@ -1,126 +1,99 @@
 <script>
 /* =========================
-   STATE
+   SAFE SELECTOR
+========================= */
+function $(id){ return document.getElementById(id); }
+
+/* =========================
+   DATA
 ========================= */
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-let product = {
-  name: 'iPhone 15 Pro',
-  color: 'Титановый',
-  storage: 128,
-  basePrice: 119990
-};
+const products = [
+  {id:1, name:'iPhone 15 Pro', price:119990, img:'iphone.png'},
+  {id:2, name:'iPhone 15', price:89990, img:'iphone.png'},
+  {id:3, name:'iPhone 14', price:74990, img:'iphone.png'}
+];
 
 /* =========================
-   PRICE
+   CART CORE
 ========================= */
-function calcPrice(){
-  let extra = product.storage === 256 ? 20000 :
-              product.storage === 512 ? 40000 : 0;
-  return product.basePrice + extra;
-}
-
-function updatePriceUI(){
-  const el = document.getElementById('price');
-  if (el) el.innerText = calcPrice().toLocaleString() + ' ₽';
-}
-
-/* =========================
-   CONFIG
-========================= */
-function setColor(btn,val){
-  product.color = val;
-  btn.parentElement.querySelectorAll('button')
-    .forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-function setStorage(btn,val){
-  product.storage = val;
-  btn.parentElement.querySelectorAll('button')
-    .forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  updatePriceUI();
-}
-
-/* =========================
-   CART LOGIC
-========================= */
-function addToCart(){
-  let item = cart.find(i =>
-    i.name===product.name &&
-    i.color===product.color &&
-    i.storage===product.storage
-  );
-
+function addToCart(product){
+  let item = cart.find(i => i.id === product.id);
   if(item){
     item.qty++;
   } else {
     cart.push({
+      id: product.id,
       name: product.name,
-      color: product.color,
-      storage: product.storage,
-      price: calcPrice(),
+      price: product.price,
       qty: 1
     });
   }
-
   saveCart();
-  animateAdd();
+  flyToCart();
   openCart();
 }
 
 function saveCart(){
   localStorage.setItem('cart', JSON.stringify(cart));
-  updateCartCount();
+  updateBadge();
 }
 
-function updateCartCount(){
-  const el=document.getElementById('count');
-  if(el) el.innerText = cart.reduce((s,i)=>s+i.qty,0);
+function updateBadge(){
+  if($('count')){
+    $('count').innerText = cart.reduce((s,i)=>s+i.qty,0);
+  }
 }
 
 /* =========================
    CART UI
 ========================= */
 function openCart(){
-  const box=document.getElementById('items');
-  box.innerHTML='';
+  if(!$('cart') || !$('items')) return;
 
-  if(cart.length===0){
-    box.innerHTML='<p>Корзина пуста</p>';
+  $('items').innerHTML = '';
+
+  if(cart.length === 0){
+    $('items').innerHTML = '<p>Корзина пуста</p>';
   } else {
     cart.forEach((i,idx)=>{
-      box.innerHTML+=`
-      <div style="margin-bottom:16px">
-        <b>${i.name}</b><br>
-        ${i.color}, ${i.storage} ГБ<br>
-        ${i.price.toLocaleString()} ₽ × ${i.qty}
-        <div>
-          <button onclick="changeQty(${idx},1)">+</button>
-          <button onclick="changeQty(${idx},-1)">−</button>
-          <button onclick="removeItem(${idx})">✕</button>
+      $('items').innerHTML += `
+        <div style="margin-bottom:16px">
+          <b>${i.name}</b><br>
+          ${i.price.toLocaleString()} ₽ × ${i.qty}
+          <div style="margin-top:8px">
+            <button onclick="changeQty(${idx},1)">+</button>
+            <button onclick="changeQty(${idx},-1)">−</button>
+            <button onclick="removeItem(${idx})">✕</button>
+          </div>
         </div>
-      </div>`;
+      `;
     });
-    box.innerHTML+=`<hr><b>Итого: ${total().toLocaleString()} ₽</b>`;
+
+    $('items').innerHTML += `
+      <hr>
+      <b>Итого: ${total().toLocaleString()} ₽</b>
+    `;
   }
 
-  document.getElementById('cart').style.display='flex';
+  $('cart').style.display = 'flex';
 }
 
 function closeCart(){
-  document.getElementById('cart').style.display='none';
+  if($('cart')) $('cart').style.display = 'none';
 }
 
-function changeQty(i,delta){
-  cart[i].qty+=delta;
-  if(cart[i].qty<=0) cart.splice(i,1);
+function changeQty(i,d){
+  if(!cart[i]) return;
+  cart[i].qty += d;
+  if(cart[i].qty <= 0) cart.splice(i,1);
   saveCart();
   openCart();
 }
 
 function removeItem(i){
+  if(!cart[i]) return;
   cart.splice(i,1);
   saveCart();
   openCart();
@@ -131,44 +104,78 @@ function total(){
 }
 
 /* =========================
-   CHECKOUT
+   CHECKOUT (APPLE STYLE)
 ========================= */
 function finish(){
-  document.getElementById('items').innerHTML=`
-    <h3>Спасибо 🍎</h3>
-    <p>Заказ оформлен</p>
-    <p>Сумма: ${total().toLocaleString()} ₽</p>
+  if(!$('items')) return;
+
+  const orderId = 'APL-' + Math.floor(Math.random()*1000000);
+  const date = new Date().toLocaleString();
+
+  $('items').innerHTML = `
+    <h2 style="text-align:center">Спасибо 🍎</h2>
+    <p style="text-align:center;color:#888">Заказ оформлен</p>
+    <hr>
+    <p><b>Номер заказа:</b> ${orderId}</p>
+    <p><b>Дата:</b> ${date}</p>
+    <hr>
+    ${cart.map(i=>`
+      <p>${i.name}<br>
+      ${i.price.toLocaleString()} ₽ × ${i.qty}</p>
+    `).join('')}
+    <hr>
+    <h3>Итого: ${total().toLocaleString()} ₽</h3>
+    <p style="color:#888">Оплата будет доступна позже</p>
+    <button onclick="location.reload()" style="width:100%">
+      Вернуться в магазин
+    </button>
   `;
-  cart=[];
+
+  cart = [];
   localStorage.removeItem('cart');
-  updateCartCount();
+  updateBadge();
 }
 
 /* =========================
-   ANIMATION
+   FLY TO CART ANIMATION
 ========================= */
-function animateAdd(){
-  const badge=document.getElementById('count');
-  badge.style.transform='scale(1.4)';
-  setTimeout(()=>badge.style.transform='scale(1)',200);
+function flyToCart(){
+  const img = document.querySelector('.hero img');
+  const cartBtn = document.querySelector('#cartBtn');
+  if(!img || !cartBtn) return;
+
+  const clone = img.cloneNode(true);
+  const r1 = img.getBoundingClientRect();
+  const r2 = cartBtn.getBoundingClientRect();
+
+  clone.style.position = 'fixed';
+  clone.style.left = r1.left + 'px';
+  clone.style.top = r1.top + 'px';
+  clone.style.width = '120px';
+  clone.style.transition = '1s cubic-bezier(.4,0,.2,1)';
+  clone.style.zIndex = 9999;
+
+  document.body.appendChild(clone);
+
+  requestAnimationFrame(()=>{
+    clone.style.left = r2.left + 'px';
+    clone.style.top = r2.top + 'px';
+    clone.style.transform = 'scale(0.1)';
+    clone.style.opacity = '0';
+  });
+
+  setTimeout(()=>clone.remove(),1000);
 }
 
 /* =========================
-   SCROLL EFFECTS
+   PWA
 ========================= */
-const obs=new IntersectionObserver(e=>{
-  e.forEach(x=>x.isIntersecting&&x.target.classList.add('show'));
-},{threshold:.3});
-document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
-
-window.addEventListener('scroll',()=>{
-  const p=document.getElementById('heroPhone');
-  if(p) p.style.transform=`translateY(${scrollY*0.15}px)`;
-});
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js');
+}
 
 /* =========================
    INIT
 ========================= */
-updatePriceUI();
-updateCartCount();
+updateBadge();
 </script>
