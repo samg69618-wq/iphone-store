@@ -1,262 +1,174 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Apple Store</title>
-
-<style>
-:root{
-  --bg:#fff;
-  --text:#1d1d1f;
-  --gray:#86868b;
-  --blue:#0071e3;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",Arial;
-  background:var(--bg);
-  color:var(--text);
-  overflow-x:hidden;
-}
-
-/* NAV */
-nav{
-  position:fixed;
-  top:0;width:100%;
-  background:rgba(255,255,255,.85);
-  backdrop-filter:blur(20px);
-  border-bottom:1px solid #eee;
-  z-index:100;
-}
-nav .inner{
-  max-width:1200px;
-  margin:auto;
-  padding:12px 20px;
-  display:flex;
-  justify-content:space-between;
-}
-nav span{cursor:pointer}
-
-/* SECTIONS */
-section{
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:120px 20px;
-}
-.inner{
-  max-width:1200px;
-  width:100%;
-  text-align:center;
-}
-
-/* HERO */
-.hero h1{
-  font-size:72px;
-  margin:0;
-}
-.hero p{
-  font-size:24px;
-  color:var(--gray);
-}
-.hero img{
-  width:420px;
-  margin-top:40px;
-  transition:transform .2s;
-}
-
-/* BUTTON */
-button{
-  background:var(--blue);
-  color:#fff;
-  border:none;
-  border-radius:999px;
-  padding:14px 26px;
-  font-size:16px;
-  cursor:pointer;
-}
-
-/* GLASS CARD */
-.glass{
-  background:rgba(255,255,255,.6);
-  backdrop-filter:blur(30px);
-  border:1px solid rgba(255,255,255,.4);
-  border-radius:30px;
-  padding:40px;
-  margin:20px auto;
-  max-width:520px;
-}
-
-/* REVEAL */
-.reveal{
-  opacity:0;
-  transform:translateY(40px);
-  transition:1s;
-}
-.reveal.show{
-  opacity:1;
-  transform:none;
-}
-
-/* CONFIG */
-.options button{
-  margin:6px;
-  background:#f5f5f7;
-  color:#000;
-}
-.options button.active{
-  outline:2px solid var(--blue);
-}
-
-/* OVERLAY */
-.overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.45);
-  backdrop-filter:blur(20px);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:200;
-}
-.modal{
-  background:#fff;
-  border-radius:30px;
-  padding:40px;
-  width:90%;
-  max-width:420px;
-  text-align:center;
-}
-</style>
-</head>
-
-<body>
-
-<nav>
-  <div class="inner">
-    <span> Apple</span>
-    <span onclick="openCart()">Корзина (<span id="count">0</span>)</span>
-  </div>
-</nav>
-
-<!-- ONBOARDING -->
-<section class="hero">
-  <div class="inner">
-    <h1 class="reveal">Apple Store</h1>
-    <p class="reveal">Новый способ выбрать iPhone</p>
-    <img id="heroPhone" class="reveal" src="https://i.imgur.com/1Q9Z1Zm.png">
-  </div>
-</section>
-
-<!-- PRODUCT STORY -->
-<section>
-  <div class="inner glass reveal">
-    <h2>iPhone 15 Pro</h2>
-    <p>Титан. Камера. Мощь.</p>
-  </div>
-</section>
-
-<!-- CONFIGURATOR -->
-<section>
-  <div class="inner glass reveal">
-    <h2>Соберите свой iPhone</h2>
-
-    <h3>Цвет</h3>
-    <div class="options">
-      <button onclick="setColor(this,'Титановый')">Титановый</button>
-      <button onclick="setColor(this,'Чёрный')">Чёрный</button>
-      <button onclick="setColor(this,'Белый')">Белый</button>
-    </div>
-
-    <h3>Память</h3>
-    <div class="options">
-      <button onclick="setStorage(this,128)">128 ГБ</button>
-      <button onclick="setStorage(this,256)">256 ГБ</button>
-      <button onclick="setStorage(this,512)">512 ГБ</button>
-    </div>
-
-    <h2 id="price">119 990 ₽</h2>
-    <button onclick="addToCart()">Добавить в корзину</button>
-  </div>
-</section>
-
-<!-- CHECKOUT -->
-<section>
-  <div class="inner glass reveal">
-    <h2>Оформление</h2>
-    <p>Оплата будет на следующем этапе 🍎</p>
-    <button onclick="openCart()">Перейти в корзину</button>
-  </div>
-</section>
-
-<!-- CART -->
-<div class="overlay" id="cart">
-  <div class="modal">
-    <h2>Корзина</h2>
-    <div id="items"></div>
-    <button onclick="finish()">Оформить заказ</button>
-  </div>
-</div>
-
 <script>
+/* =========================
+   STATE
+========================= */
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
-let color='Титановый';
-let storage=128;
-let base=119990;
 
-function updatePrice(){
-  let extra = storage===256?20000:storage===512?40000:0;
-  document.getElementById('price').innerText=(base+extra).toLocaleString()+' ₽';
+let product = {
+  name: 'iPhone 15 Pro',
+  color: 'Титановый',
+  storage: 128,
+  basePrice: 119990
+};
+
+/* =========================
+   PRICE
+========================= */
+function calcPrice(){
+  let extra = product.storage === 256 ? 20000 :
+              product.storage === 512 ? 40000 : 0;
+  return product.basePrice + extra;
 }
 
+function updatePriceUI(){
+  const el = document.getElementById('price');
+  if (el) el.innerText = calcPrice().toLocaleString() + ' ₽';
+}
+
+/* =========================
+   CONFIG
+========================= */
 function setColor(btn,val){
-  color=val;
-  btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+  product.color = val;
+  btn.parentElement.querySelectorAll('button')
+    .forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
 }
+
 function setStorage(btn,val){
-  storage=val;
-  btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+  product.storage = val;
+  btn.parentElement.querySelectorAll('button')
+    .forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  updatePrice();
+  updatePriceUI();
 }
 
+/* =========================
+   CART LOGIC
+========================= */
 function addToCart(){
-  cart.push(`iPhone 15 Pro — ${color}, ${storage} ГБ`);
-  localStorage.setItem('cart',JSON.stringify(cart));
-  document.getElementById('count').innerText=cart.length;
+  let item = cart.find(i =>
+    i.name===product.name &&
+    i.color===product.color &&
+    i.storage===product.storage
+  );
+
+  if(item){
+    item.qty++;
+  } else {
+    cart.push({
+      name: product.name,
+      color: product.color,
+      storage: product.storage,
+      price: calcPrice(),
+      qty: 1
+    });
+  }
+
+  saveCart();
+  animateAdd();
+  openCart();
 }
 
+function saveCart(){
+  localStorage.setItem('cart', JSON.stringify(cart));
+  updateCartCount();
+}
+
+function updateCartCount(){
+  const el=document.getElementById('count');
+  if(el) el.innerText = cart.reduce((s,i)=>s+i.qty,0);
+}
+
+/* =========================
+   CART UI
+========================= */
 function openCart(){
-  let box=document.getElementById('items');
+  const box=document.getElementById('items');
   box.innerHTML='';
-  cart.forEach(i=>box.innerHTML+=i+'<br>');
+
+  if(cart.length===0){
+    box.innerHTML='<p>Корзина пуста</p>';
+  } else {
+    cart.forEach((i,idx)=>{
+      box.innerHTML+=`
+      <div style="margin-bottom:16px">
+        <b>${i.name}</b><br>
+        ${i.color}, ${i.storage} ГБ<br>
+        ${i.price.toLocaleString()} ₽ × ${i.qty}
+        <div>
+          <button onclick="changeQty(${idx},1)">+</button>
+          <button onclick="changeQty(${idx},-1)">−</button>
+          <button onclick="removeItem(${idx})">✕</button>
+        </div>
+      </div>`;
+    });
+    box.innerHTML+=`<hr><b>Итого: ${total().toLocaleString()} ₽</b>`;
+  }
+
   document.getElementById('cart').style.display='flex';
 }
-function finish(){
-  alert('Заказ оформлен 🍎 (визуально)');
-  cart=[];
-  localStorage.clear();
-  location.reload();
+
+function closeCart(){
+  document.getElementById('cart').style.display='none';
 }
 
-/* REVEAL */
+function changeQty(i,delta){
+  cart[i].qty+=delta;
+  if(cart[i].qty<=0) cart.splice(i,1);
+  saveCart();
+  openCart();
+}
+
+function removeItem(i){
+  cart.splice(i,1);
+  saveCart();
+  openCart();
+}
+
+function total(){
+  return cart.reduce((s,i)=>s+i.price*i.qty,0);
+}
+
+/* =========================
+   CHECKOUT
+========================= */
+function finish(){
+  document.getElementById('items').innerHTML=`
+    <h3>Спасибо 🍎</h3>
+    <p>Заказ оформлен</p>
+    <p>Сумма: ${total().toLocaleString()} ₽</p>
+  `;
+  cart=[];
+  localStorage.removeItem('cart');
+  updateCartCount();
+}
+
+/* =========================
+   ANIMATION
+========================= */
+function animateAdd(){
+  const badge=document.getElementById('count');
+  badge.style.transform='scale(1.4)';
+  setTimeout(()=>badge.style.transform='scale(1)',200);
+}
+
+/* =========================
+   SCROLL EFFECTS
+========================= */
 const obs=new IntersectionObserver(e=>{
   e.forEach(x=>x.isIntersecting&&x.target.classList.add('show'));
 },{threshold:.3});
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 
-/* PARALLAX */
 window.addEventListener('scroll',()=>{
-  document.getElementById('heroPhone').style.transform=
-    `translateY(${window.scrollY*0.15}px)`;
+  const p=document.getElementById('heroPhone');
+  if(p) p.style.transform=`translateY(${scrollY*0.15}px)`;
 });
 
-document.getElementById('count').innerText=cart.length;
+/* =========================
+   INIT
+========================= */
+updatePriceUI();
+updateCartCount();
 </script>
-
-</body>
-</html>
