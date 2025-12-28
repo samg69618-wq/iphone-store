@@ -34,6 +34,13 @@ section.active{display:block}
 
 .hero{text-align:center;padding:60px 20px}
 
+.sale{
+  color:#d60000;
+  font-weight:600;
+  font-size:20px;
+  margin-top:10px;
+}
+
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
@@ -97,16 +104,11 @@ button{
   animation:fade .3s ease;
 }
 
-/* ЧЕК */
 .receipt{
   background:#f5f5f7;
   border-radius:24px;
   padding:20px;
   margin-top:20px;
-}
-.receipt h3{
-  margin-top:0;
-  text-align:center;
 }
 .receipt-item{
   display:flex;
@@ -140,6 +142,7 @@ button{
 <section id="catalog" class="active">
   <div class="hero">
     <h1>iPhone</h1>
+    <p class="sale">🔥 СКИДКИ 70% НА ВСЕ ТОВАРЫ!</p>
     <p>Новый уровень. Как всегда.</p>
   </div>
 
@@ -147,12 +150,12 @@ button{
     <div class="card" onclick="openProduct(1)">
       <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
       <h3>iPhone 15 Pro</h3>
-      <p>от 119 990 ₽</p>
+      <p>от 35 997 ₽</p>
     </div>
     <div class="card" onclick="openProduct(2)">
       <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg">
       <h3>iPhone 15</h3>
-      <p>от 89 990 ₽</p>
+      <p>от 26 997 ₽</p>
     </div>
   </div>
 </section>
@@ -184,21 +187,30 @@ button{
 </div>
 
 <script>
+const DISCOUNT = 0.3; // 70% скидка
+
 const products={
   1:{
     name:'iPhone 15 Pro',
-    base:119990,
+    base:Math.round(119990 * DISCOUNT),
     colors:['Чёрный','Титан','Белый'],
     memory:['128 ГБ','256 ГБ','512 ГБ'],
-    memoryPrice:{'128 ГБ':0,'256 ГБ':10000,'512 ГБ':30000},
+    memoryPrice:{
+      '128 ГБ':0,
+      '256 ГБ':Math.round(10000 * DISCOUNT),
+      '512 ГБ':Math.round(30000 * DISCOUNT)
+    },
     image:'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/iphone-15-pro-black'
   },
   2:{
     name:'iPhone 15',
-    base:89990,
+    base:Math.round(89990 * DISCOUNT),
     colors:['Чёрный','Синий','Розовый'],
     memory:['128 ГБ','256 ГБ'],
-    memoryPrice:{'128 ГБ':0,'256 ГБ':10000},
+    memoryPrice:{
+      '128 ГБ':0,
+      '256 ГБ':Math.round(10000 * DISCOUNT)
+    },
     image:'https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/iphone-15-black'
   }
 };
